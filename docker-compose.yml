@@ -1,0 +1,32 @@
+version: '3'
+services:
+#  go_app:
+#    build:
+#      context: .
+#      dockerfile: ./docker/go/Dockerfile
+#    ports:
+#      - "8080:80"
+#    depends_on:
+#      - db
+#    networks:
+#      - go_app_network
+
+  db:
+    image: postgres
+    environment:
+      POSTGRES_DB: '${DB_DATABASE}'
+      POSTGRES_USER: '${DB_USERNAME}'
+      POSTGRES_PASSWORD: '${DB_PASSWORD}'
+    ports:
+      - "5432:5432"
+    command: postgres -c 'shared_buffers=256MB' -c 'max_connections=200'
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - go_app_network
+
+networks:
+  go_app_network:
+    driver: bridge
+volumes:
+  postgres_data:

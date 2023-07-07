@@ -1,0 +1,14 @@
+POST http://localhost/api/register
+Accept: application/json
+Content-Type: application/json
+
+### Send POST request with json body
+POST http://localhost/api/register
+Accept: application/json
+Content-Type: application/json
+
+{
+  "first_name": "chrys",
+  "last_name": "ugwu",
+  "email": "foo@bar.com"
+}
