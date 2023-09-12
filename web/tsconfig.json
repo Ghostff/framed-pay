@@ -1,0 +1,40 @@
+{
+  "extends": "@tsconfig/node18/tsconfig.json",
+  "exclude": ["src/**/__tests__/*"],
+  "include": [
+    "env.d.ts",
+    "src/**/*",
+    "src/**/*.vue",
+    "vite.config.*",
+    "vitest.config.*",
+    "cypress.config.*",
+    "nightwatch.conf.*",
+    "playwright.config.*"
+  ],
+  "compilerOptions": {
+    "composite": true,
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "types": ["node"],
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./src/*"]
+    },
+    "lib": [
+      // Target ES2020 to align with Vite.
+      // <https://vitejs.dev/config/build-options.html#build-target>
+      // Support for newer versions of language built-ins are
+      // left for the users to include, because that would require:
+      //   - either the project doesn't need to support older versions of browsers;
+      //   - or the project has properly included the necessary polyfills.
+      "ES2020",
+
+      "DOM",
+      "DOM.Iterable"
+
+      // No `ScriptHost` because Vue 3 dropped support for IE
+    ],
+  }
+}
+
+

@@ -1,0 +1,43 @@
+import { faAngleDown, faArrowRightFromBracket, faExclamationCircle, faUser } from '@fortawesome/free-solid-svg-icons';
+
+export default [
+  faAngleDown,
+  faArrowRightFromBracket,
+  faUser,
+  faExclamationCircle
+  /* faDownload,
+     faMagnifyingGlassLocation,
+     faNoteSticky,
+     faPencil,
+     faLocationDot,
+     faCirclePause,
+     faCirclePlay,
+     faShareFromSquare,
+     faFileContract,
+     faArrowRotateRight,
+     faPersonWalkingArrowRight,
+   
+     faX,
+     faTrashCan,
+     faChevronDown,
+     faEllipsis,
+     faChevronLeft,
+     faChevronRight,
+     faMagnifyingGlass,
+     faPeopleCarryBox,
+     faHammer,
+     faHouse,
+     faTableColumns,
+     faBusinessTime,
+     faUser,
+     faCertificate,
+     faIdCard,
+     faBuildingColumns,
+     faCheck,
+     faCircleExclamation,
+     faTriangleExclamation,
+     faXmark,
+     faArrowRightFromBracket,
+     faCaretUp,
+     faMinus*/
+];
