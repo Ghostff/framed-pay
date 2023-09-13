@@ -3,12 +3,11 @@ use std::path::PathBuf;
 use actix_cors::Cors;
 use actix_files::NamedFile;
 use actix_web::{App, error, Error, HttpRequest, HttpServer, web};
-use actix_web::http::header;
-use actix_web::middleware::Logger;
-use actix_web_validator::JsonConfig;
+use actix_web::http::{header};
+use actix_web::middleware::{Logger, Compress, NormalizePath};
+use diesel::{PgConnection, r2d2};
+use diesel::r2d2::ConnectionManager;
 use dotenv::dotenv;
-use sqlx::{Pool, Postgres};
-use sqlx::postgres::PgPoolOptions;
 
 use crate::config::Config;
 
@@ -17,6 +16,7 @@ mod models;
 mod middlewares;
 mod config;
 mod routes;
+mod repositories;
 
 async fn spa_index(_req: HttpRequest) -> Result<NamedFile, Error> {
     let path: PathBuf = "./static/index.html".parse().unwrap();
@@ -29,8 +29,11 @@ async fn spa_index(_req: HttpRequest) -> Result<NamedFile, Error> {
     Ok(NamedFile::open(path)?)
 }
 
+pub type DBPool = r2d2::Pool<ConnectionManager<PgConnection>>;
+
+
 pub struct AppState {
-    db: Pool<Postgres>,
+    db: DBPool,
     env: Config,
 }
 
@@ -43,21 +46,8 @@ async fn main() -> std::io::Result<()> {
     dotenv().ok();
 
     let config = Config::init();
-
-    let pool = match PgPoolOptions::new()
-        .max_connections(10)
-        .connect(&config.database_url)
-        .await
-    {
-        Ok(pool) => {
-            println!("✅ Connection to the database is successful!");
-            pool
-        }
-        Err(err) => {
-            println!("🔥 Failed to connect to the database: {:?}", err);
-            std::process::exit(1);
-        }
-    };
+    let manager = ConnectionManager::<PgConnection>::new(&config.database_url);
+    let pool: DBPool = r2d2::Pool::builder().build(manager).expect("Failed to create pool.");
 
     println!("🚀 Server started successfully");
 
@@ -79,15 +69,12 @@ async fn main() -> std::io::Result<()> {
                 db: pool.clone(),
                 env: config.clone(),
             }))
-            .service(
-                web::scope("/api")
-                    .app_data(JsonConfig::default().error_handler(models::response::Response::error_handler))
-                    .wrap(cors)
-                    .configure(routes::api::init)
-            )
+            .service(web::scope("/api").wrap(cors).configure(routes::api::init))
             .configure(routes::web::init)
             .default_service(web::to(spa_index))
             .wrap(Logger::default())
+            .wrap(Compress::default())
+            .wrap(NormalizePath::trim())
             .wrap(Logger::new("%a %{User-Agent}i"))
     })
         .bind(("127.0.0.1", 80))?
@@ -101,5 +88,5 @@ async fn main() -> std::io::Result<()> {
 // validation https://github.com/Keats/validator
 // migration:
 //  create: sqlx migrate add -r <name>
-//  run: sqlx migrate revert
-//  run: sqlx migrate run
+//  run: diesel migration run
+//  run: diesel migration redo

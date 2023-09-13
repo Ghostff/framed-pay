@@ -108,12 +108,6 @@ function submit(): void {
 
       console.error(error);
     });
-
-  // response::filter_user_record(&user)
-  // useAuthStore().setUser(data.user)
-  //
-
-  formData.reset();
 }
 </script>
 

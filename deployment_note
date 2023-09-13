@@ -1,0 +1,6 @@
+make get_cookie secure in controllers/auth.rs:24
+change allowed_origin in main.rs:66 to support current site url
+
+https://github.com/diesel-rs/diesel/blob/master/guide_drafts/backend_installation.md
+ - sudo apt-get install libpq-dev
+ - cargo install diesel_cli --no-default-features --features postgres

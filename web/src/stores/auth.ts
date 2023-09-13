@@ -20,8 +20,10 @@ export const useAuthStore = defineStore('auth', {
       this.user = userData;
     },
     async login(userData: UserInterface): Promise<void> {
-      this.setUser(userData);
-      await router.push({ name: 'dashboard' });
+      if (typeof userData === 'object' && userData !== null) {
+        this.setUser(userData);
+        await router.push({ name: 'dashboard' });
+      }
     },
     async logout(): Promise<void> {
       await axios.get('logout');

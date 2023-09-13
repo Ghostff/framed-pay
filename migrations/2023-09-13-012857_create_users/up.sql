@@ -7,6 +7,7 @@ CREATE TABLE "users" (
      email VARCHAR(255) NOT NULL UNIQUE,
      avatar VARCHAR NOT NULL DEFAULT 'default.png',
      password VARCHAR(255) NOT NULL,
+     password_reset_token VARCHAR(255) NULL,
      role VARCHAR(100) NOT NULL DEFAULT 'user',
      last_logged_in_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
      created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),

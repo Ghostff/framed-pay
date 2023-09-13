@@ -37,10 +37,10 @@
             </div>
 
             <div class="mt-5">
-                <Form @submit="submit">
+                <Form ref="formElement" @submit="submit">
                     <div class="grid gap-y-4">
                         <Input v-model="formData.email" required label="Email address" type="email" minlength="4" maxlength="255"/>
-                        <Button type="submit">Reset password</Button>
+                        <Button :loading="isProcessing" type="submit">Reset password</Button>
                     </div>
                 </Form>
             </div>
@@ -55,18 +55,39 @@ import Button from "@/components/form/Button.vue";
 import Form from "@/components/form/Form.vue";
 import FontCheck2 from "@/components/icons/IconCheck2.vue";
 import {resettableReactive} from "@/utility";
+import {UserInterface} from "@/models/user";
+import {useAuthStore} from "@/stores/auth";
+import axios from "axios";
 
 defineEmits<{
     (e: 'toggle', value: string): void
 }>();
 
+const isProcessing: Ref = ref<boolean>(false);
+const formElement: Ref<HTMLFormElement | null> = ref(null);
 const formData = resettableReactive({
-    email: '',
+  email: 'frankchris@hotmail.com',
 });
 const success: Ref = ref<boolean>(false);
 
 function submit(): void  {
+  isProcessing.value = true;
+  axios
+      .post('/reset-password', formData)
+      .finally(() => (isProcessing.value = false))
+      .then(response => {
+        success.value = true;
+        formData.reset();
+        console.log(response)
+      })
+      .catch((error) => {
+        if (error.response) {
+          formElement.value?.setErrors(error.response.data);
+          return;
+        }
 
+        console.error(error);
+      });
 }
 </script>
 
