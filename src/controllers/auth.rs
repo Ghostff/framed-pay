@@ -1,3 +1,4 @@
+use std::collections::HashMap;
 use actix_web::{
     cookie::{Cookie, time::Duration as ActixWebDuration},
     http::StatusCode as SC, Responder,
@@ -5,6 +6,7 @@ use actix_web::{
 };
 use actix_web::web::Data;
 use actix_web_validator::Json;
+use apalis::redis::RedisStorage;
 use argon2::{
     Argon2,
     password_hash::{PasswordHash, PasswordHasher, PasswordVerifier, rand_core::OsRng, SaltString},
@@ -12,15 +14,10 @@ use argon2::{
 use chrono::{Duration, prelude::*};
 use jsonwebtoken::{encode, EncodingKey, Header};
 
-use crate::{
-    AppState,
-    models::jwt::TokenClaims,
-    models::response::Response,
-    models::users::{LoginUserSchema, RegisterUserSchema, User},
-    repositories as repo
-};
-use crate::config::Config;
+use crate::{DBPool, models::jwt::TokenClaims, models::response::Response, models::users::{LoginUserSchema, RegisterUserSchema, User}, repositories as repo, services};
+use crate::config::{ENV};
 use crate::models::users::ResetUserPasswordSchema;
+use crate::services::email::Email;
 
 pub fn get_cookie(value: String, expire_at: i64) -> Cookie<'static> {
     Cookie::build("token", value)
@@ -31,8 +28,8 @@ pub fn get_cookie(value: String, expire_at: i64) -> Cookie<'static> {
         .finish()
 }
 
-pub async fn register(body: Json<RegisterUserSchema>, data: Data<AppState>) -> impl Responder {
-    let db = data.db.clone();
+pub async fn register(body: Json<RegisterUserSchema>, conn: Data<DBPool>) -> impl Responder {
+    let db = conn.clone();
     let email = body.email.clone();
     let exists = web::block(move || repo::user::email_exist(&db, email.as_str()))
         .await
@@ -42,7 +39,7 @@ pub async fn register(body: Json<RegisterUserSchema>, data: Data<AppState>) -> i
         return Response::new().status(SC::CONFLICT).error("A user with email already exist in our system");
     }
 
-    let db = data.db.clone();
+    let db = conn.clone();
     let salt = SaltString::generate(&mut OsRng);
     let hashed_password = Argon2::default()
         .hash_password(body.password.as_bytes(), &salt)
@@ -59,7 +56,7 @@ pub async fn register(body: Json<RegisterUserSchema>, data: Data<AppState>) -> i
 
     match insert_query {
         Ok(Ok(user)) => {
-            let token = create_jwt_token(&data.env.clone(), &user);
+            let token = create_jwt_token(&user);
             Response::new().cookie(get_cookie(token.to_string(), 60 * 60)).ok(user.get_filtered())
         }
         Err(e) => {
@@ -72,8 +69,8 @@ pub async fn register(body: Json<RegisterUserSchema>, data: Data<AppState>) -> i
     }
 }
 
-pub async fn login(body: Json<LoginUserSchema>, data: Data<AppState>) -> impl Responder {
-    let db = data.db.clone();
+pub async fn login(body: Json<LoginUserSchema>, conn: Data<DBPool>) -> impl Responder {
+    let db = conn.clone();
     let email = body.email.clone();
     let query_result = web::block(move || repo::user::get_by_email(&db, email.as_str()))
         .await;
@@ -93,7 +90,7 @@ pub async fn login(body: Json<LoginUserSchema>, data: Data<AppState>) -> impl Re
     }
 
     let user = query_result.unwrap().unwrap();
-    let token = create_jwt_token(&data.env, &user);
+    let token = create_jwt_token(&user);
 
     Response::new().cookie(get_cookie(token.to_string(), 60 * 60)).ok(user.get_filtered())
 }
@@ -102,8 +99,8 @@ pub async fn logout(_: User) -> impl Responder {
     Response::new().cookie(get_cookie("".to_string(), -1)).ok("Logged Out")
 }
 
-pub async fn reset_password(body: Json<ResetUserPasswordSchema>, data: Data<AppState>) -> impl Responder {
-    let db = data.db.clone();
+pub async fn reset_password(body: Json<ResetUserPasswordSchema>, conn: Data<DBPool>, queue: Data<RedisStorage<Email>>) -> impl Responder {
+    let db = conn.clone();
     let email = body.email.clone();
     let user_exist = web::block(move || repo::user::email_exist(&db, email.as_str()))
         .await
@@ -111,12 +108,22 @@ pub async fn reset_password(body: Json<ResetUserPasswordSchema>, data: Data<AppS
 
     if user_exist {
 
+        let email = body.email.clone();
+        let mut data = HashMap::with_capacity(2);
+        data.insert("email".to_string(), email.clone());
+        data.insert("token".to_string(), services::str::get_random(200));
+
+        services::queue::dispatch(
+            queue,
+            Email::simple(email, "Hello", "Test Email", data)
+        ).await;
     }
+
 
     Response::new().ok("Success")
 }
 
-fn create_jwt_token(env: &Config, user: &User) -> String {
+fn create_jwt_token(user: &User) -> String {
     let now = Utc::now();
     let claims: TokenClaims = TokenClaims {
         sub: user.id.to_string(),
@@ -124,7 +131,7 @@ fn create_jwt_token(env: &Config, user: &User) -> String {
         iat: now.timestamp() as usize,
     };
 
-    encode(&Header::default(), &claims, &EncodingKey::from_secret(env.jwt_secret.as_ref())).unwrap()
+    encode(&Header::default(), &claims, &EncodingKey::from_secret(ENV.jwt_secret.as_ref())).unwrap()
 }
 
 

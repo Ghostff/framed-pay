@@ -4,10 +4,11 @@ use actix_web::error::{ErrorUnauthorized};
 use actix_web::http::StatusCode;
 use jsonwebtoken::{decode, DecodingKey, Validation};
 use serde::Serialize;
-use crate::{AppState, repositories};
+use crate::{DBPool, repositories};
 use crate::models::jwt::TokenClaims;
 use crate::models::users::User;
 use futures_util::future::LocalBoxFuture;
+use crate::config::ENV;
 
 #[derive(Debug, Serialize)]
 struct UnAuthorizedResponse<'a> {
@@ -33,8 +34,8 @@ impl FromRequest for User {
     type Future = LocalBoxFuture<'static, Result<Self, Self::Error>>;
 
     fn from_request(req: &HttpRequest, _: &mut Payload) -> Self::Future {
-        let data = match req.app_data::<web::Data<AppState>>() {
-            Some(data) => data,
+        let conn = match req.app_data::<web::Data<DBPool>>() {
+            Some(data) => data.get_ref(),
             None => return Box::pin(async { fail() })
         };
 
@@ -53,8 +54,8 @@ impl FromRequest for User {
             None => return Box::pin(async { fail() })
         };
 
-        let jwt_secret = data.env.jwt_secret.clone();
-        let db = data.db.clone();
+        let jwt_secret = ENV.jwt_secret.clone();
+        let db = conn.clone();
 
         Box::pin(async move {
             let claims = match decode::<TokenClaims>(

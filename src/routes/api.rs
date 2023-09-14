@@ -1,7 +1,6 @@
-// use actix_web::dev::{ServiceRequest, ServiceResponse};
 use actix_web::web;
 use actix_web_validator::JsonConfig;
-use crate::{controllers, models, middlewares};
+use crate::{controllers, models};
 
 pub fn init(cfg: &mut web::ServiceConfig) {
     cfg.app_data(JsonConfig::default().error_handler(models::response::Response::error_handler))
