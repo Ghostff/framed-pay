@@ -29,6 +29,7 @@
                     <Login v-if="authState === 'login'" @toggle="setState" />
                     <Register v-else-if="authState === 'register'" @toggle="setState" />
                     <ForgotPassword v-else-if="authState === 'forgot-password'" @toggle="setState" />
+                    <PasswordReset v-else-if="authState === 'password-reset'" @toggle="setState" />
                 </div>
             </div>
             <!-- End Col -->
@@ -42,6 +43,7 @@ import {ref, type Ref} from "vue";
 import Login from "@/views/authentication/Login.vue";
 import Register from "@/views/authentication/Register.vue";
 import ForgotPassword from "@/views/authentication/ForgotPassword.vue";
+import PasswordReset from "@/views/authentication/PasswordReset.vue";
 
 const props = defineProps({
     show: {

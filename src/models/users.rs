@@ -1,10 +1,11 @@
 use chrono::{DateTime, Utc};
-use diesel::{Insertable, Queryable};
+use diesel::{AsChangeset, Insertable, Queryable};
 use serde::{Deserialize, Serialize};
 use validator::Validate;
 
+#[derive(AsChangeset)]
 #[derive(Debug, Clone, Serialize, Deserialize, Queryable, Insertable)]
-#[diesel(table_name = crate::models::schema::users)]
+#[diesel(table_name = crate::models::schema::users, treat_none_as_null = true)]
 pub struct User {
     pub id: uuid::Uuid,
     pub first_name: String,
@@ -28,7 +29,7 @@ pub struct RegisterUserSchema {
     #[validate(length(min = 4, max = 250, message = "Email must be between 4 to 250"))]
     #[validate(email(code = "code_str", message = "Invalid email address"))]
     pub email: String,
-    #[validate(length(min = 8, message = "Password must be greater than 8 characters"))]
+    #[validate(length(min = 6, message = "Password must be greater than 8 characters"))]
     pub password: String,
 }
 
@@ -37,7 +38,7 @@ pub struct LoginUserSchema {
     #[validate(length(min = 4, max = 250, message = "Email must be between 4 to 250"))]
     #[validate(email(code = "code_str", message = "Invalid email address"))]
     pub email: String,
-    #[validate(length(min = 8, message = "Password must be greater than 8 characters"))]
+    #[validate(length(min = 6, message = "Password must be greater than 8 characters"))]
     pub password: String,
 }
 
@@ -46,6 +47,24 @@ pub struct ResetUserPasswordSchema {
     #[validate(length(min = 4, max = 250, message = "Email must be between 4 to 250"))]
     #[validate(email(code = "code_str", message = "Invalid email address"))]
     pub email: String,
+}
+
+#[derive(Debug, Deserialize, Validate)]
+pub struct VerifyPasswordResetTokenSchema {
+    #[validate(length(min = 200, max = 250, message = "Invalid or expired token"))]
+    pub token: String,
+    #[validate(length(min = 36, max = 36, message = "Invalid or expired token"))]
+    pub uid: String,
+}
+
+#[derive(Debug, Deserialize, Validate)]
+pub struct PasswordChangeSchema {
+    #[validate(length(min = 200, max = 250, message = "Invalid or expired token"))]
+    pub token: String,
+    #[validate(length(min = 36, max = 36, message = "Invalid or expired token"))]
+    pub uid: String,
+    #[validate(length(min = 6, message = "Password must be greater than 8 characters"))]
+    pub password: String,
 }
 
 #[allow(non_snake_case)]

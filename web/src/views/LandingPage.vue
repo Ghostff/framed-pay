@@ -105,7 +105,7 @@ const showAuthModal: Ref = ref<string|null>(null);
 const route: RouteLocationNormalizedLoaded = useRoute();
 
 onMounted(() => {
-    if (['login', 'register', 'forgot-password'].includes(<string>route.query.show)) {
+    if (['login', 'register', 'forgot-password', 'password-reset'].includes(<string>route.query.show)) {
         showAuthModal.value = route.query.show;
     }
 });

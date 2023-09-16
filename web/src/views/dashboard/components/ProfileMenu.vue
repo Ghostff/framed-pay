@@ -31,7 +31,7 @@
           <div class="py-3 px-5 -m-2 bg-gray-100 rounded-t-lg dark:bg-gray-700">
             <p class="text-sm text-gray-500 dark:text-gray-400">Signed in as</p>
             <p class="text-sm font-medium text-gray-800 dark:text-gray-300">
-              {{ store.user.email }}
+              {{ (store.user as UserInterface).email }}
             </p>
           </div>
         </template>
@@ -46,6 +46,7 @@ import DropDown from '@/components/DropDown.vue';
 import Button from '@/components/form/Button.vue';
 import { useAuthStore } from '@/stores/auth';
 import Theme from '@/components/Theme.vue';
+import {UserInterface} from "@/models/user";
 
 const store = useAuthStore();
 defineProps<{

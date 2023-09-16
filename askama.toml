@@ -1,0 +1,3 @@
+#https://djc.github.io/askama/configuration.html
+[general]
+dirs = ["src/templates/emails"]

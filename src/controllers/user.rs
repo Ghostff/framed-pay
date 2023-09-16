@@ -1,6 +1,6 @@
 use actix_web::{ HttpRequest, Responder };
 
-use crate::models::response::Response;
+use crate::services::response::Response;
 use crate::models::users::User;
 
 pub async fn me(_: HttpRequest, user: User) -> impl Responder {

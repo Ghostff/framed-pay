@@ -1,5 +1,5 @@
 use actix_web::web::Data;
-use apalis::prelude::{Job, JobId, Storage};
+use apalis::prelude::{Job, Storage};
 use apalis::redis::RedisStorage;
 use log::error;
 use serde::de::DeserializeOwned;

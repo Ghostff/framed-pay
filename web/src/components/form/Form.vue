@@ -51,11 +51,13 @@ function clear(): void {
 function setErrors(error: Error): void {
   clear();
   if (error.errors) {
-    error.error = 'An error occurred.';
+    error.error = error.error || 'An error occurred.';
     for (const name in error.errors) {
+      console.log(name, error.errors)
       toggleErrors(error.errors, name);
     }
   }
+
 
   formError.value = error.error;
   return;
@@ -69,8 +71,6 @@ function toggleErrors(errors?: stringKey<string[]>, name?: string): void {
     } else {
       el.classList.add('hidden');
     }
-
-    console.log(el, el.getAttribute('placeholder'));
 
     if (el.classList.contains('err-msg')) {
       el.textContent = errors && name ? errors[name][0] : '';

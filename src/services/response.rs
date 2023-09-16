@@ -59,6 +59,15 @@ impl<'a> Response<'a> {
         json_response
     }
 
+    // Internal server error.
+    pub fn fetal(&mut self) -> HttpResponse {
+        self.build("Internal server error")
+    }
+
+    pub fn success(&mut self) -> HttpResponse {
+        self.ok("Success")
+    }
+
     pub fn error(&mut self, message: impl Serialize) -> HttpResponse {
         self.build(message)
     }

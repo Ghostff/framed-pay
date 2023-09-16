@@ -57,7 +57,7 @@
                 Forgot password?
               </a>
             </div>
-            <Input v-model="formData.password" required type="password" minlength="8" maxlength="255" />
+            <Input v-model="formData.password" required type="password" minlength="6" maxlength="255" />
           </div>
           <!-- End Form Group -->
           <Checkbox v-model="formData.remember_me" label="Remember me" />

@@ -22,6 +22,8 @@ mod config;
 mod routes;
 mod repositories;
 mod services;
+mod templates;
+mod errors;
 
 async fn spa_index(_req: HttpRequest) -> Result<NamedFile, Error> {
     let path: PathBuf = "./static/index.html".parse().unwrap();
@@ -51,31 +53,36 @@ async fn main() -> std::io::Result<()> {
     println!("🚀 Server started successfully");
 
     let queue_data = queue.clone();
-    let http = HttpServer::new(move || {
-        let cors = Cors::default()
-            .allowed_origin("http://localhost:3000")
-            .allowed_methods(vec!["GET", "POST", "DELETE", "PUT"])
-            .allowed_headers(vec![
-                header::CONTENT_TYPE,
-                header::AUTHORIZATION,
-                header::ACCEPT,
-            ])
-            .supports_credentials()
-            .max_age(3600);
+    let http = async {
+        HttpServer::new(move || {
+            let cors = Cors::default()
+                .allowed_origin("http://localhost:3000")
+                .allowed_methods(vec!["GET", "POST", "DELETE", "PUT"])
+                .allowed_headers(vec![
+                    header::CONTENT_TYPE,
+                    header::AUTHORIZATION,
+                    header::ACCEPT,
+                ])
+                .supports_credentials()
+                .max_age(3600);
 
-        App::new()
-            .app_data(web::Data::new(pool.clone()))
-            .app_data(web::Data::new(queue_data.clone()))
-            .service(web::scope("/api").wrap(cors).configure(routes::api::init))
-            .configure(routes::web::init)
-            .default_service(web::to(spa_index))
-            .wrap(Logger::default())
-            .wrap(Compress::default())
-            .wrap(NormalizePath::trim())
-            .wrap(Logger::new("%a %{User-Agent}i"))
-    })
-        .bind(("127.0.0.1", 80))?
-        .run();
+            App::new()
+                .app_data(web::Data::new(pool.clone()))
+                .app_data(web::Data::new(queue_data.clone()))
+                .service(web::scope("/api").wrap(cors).configure(routes::api::init))
+                .configure(routes::web::init)
+                .default_service(web::to(spa_index))
+                .wrap(Logger::default())
+                .wrap(Compress::default())
+                .wrap(NormalizePath::trim())
+                .wrap(Logger::new("%a %{User-Agent}i"))
+        })
+            .bind(("127.0.0.1", 80))?
+            .run()
+            .await?;
+
+        Ok(())
+    };
 
     let worker = Monitor::new()
         .register_with_count(2, move |index| {

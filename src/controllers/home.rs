@@ -1,7 +1,7 @@
 use actix_files::NamedFile;
 use actix_web::{Error, HttpResponse, Responder};
 use actix_web::http::StatusCode;
-use crate::models::response::Response;
+use crate::services::response::Response;
 
 pub async fn index() -> impl Responder {
     HttpResponse::Ok().body("Hello world!")

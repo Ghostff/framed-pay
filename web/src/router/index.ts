@@ -12,7 +12,7 @@ const router = createRouter({
       component: LandingPage,
       children: [
         {
-          path: '/login',
+          path: 'login',
           name: 'login',
           redirect: () => ({ name: 'landing-page', query: { show: 'login' } }),
           meta: {
@@ -20,14 +20,20 @@ const router = createRouter({
           }
         },
         {
-          path: '/register',
+          path: 'register',
           name: 'register',
           redirect: () => ({ name: 'landing-page', query: { show: 'register' } })
         },
         {
-          path: '/forgot-password',
+          path: 'forgot-password',
           name: 'forgot-password',
           redirect: () => ({ name: 'landing-page', query: { show: 'forgot-password' } })
+        },
+        {
+          path: 'password-reset/:token/:uid',
+          name: 'password-reset',
+          redirect: (r) => ({
+            name: 'landing-page', query: { show: 'password-reset', ...r.params } })
         }
       ]
     },
