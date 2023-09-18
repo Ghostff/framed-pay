@@ -2,7 +2,7 @@ use diesel::QueryResult;
 use diesel::result::Error;
 use crate::errors::FailSafeError;
 
-pub mod user;
+pub mod user_repository;
 
 pub async fn query<'a, T, F>(callback: F) -> Result<T, FailSafeError<'a>>
     where

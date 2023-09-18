@@ -1,11 +1,10 @@
 use std::time::Duration;
 use apalis::prelude::Job;
 use lettre::message::header::ContentType;
-use lettre::{AsyncSmtpTransport, AsyncTransport, Message, Tokio1Executor, Transport};
+use lettre::{AsyncSmtpTransport, AsyncTransport, Message, Tokio1Executor};
 use lettre::transport::smtp::authentication::Credentials;
 use lettre::transport::smtp::Error;
 use log::{error, info};
-use tokio::time::Instant;
 use crate::config::ENV;
 
 #[derive(Debug, Clone, serde::Deserialize, serde::Serialize)]
@@ -32,16 +31,6 @@ impl Email {
 
     pub fn html(to: String, subject: &str, template: String) -> Self {
         Self::new(to, subject, template)
-    }
-
-    pub fn from(&mut self, email: &str) -> &mut Self {
-        self.from = email.to_string();
-        self
-    }
-
-    pub fn to(&mut self, emails: Vec<String>) -> &mut Self {
-        self.to = emails;
-        self
     }
 
     pub async fn send(&mut self) -> Result<(), Error> {

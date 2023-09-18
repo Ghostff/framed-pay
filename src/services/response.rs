@@ -31,6 +31,7 @@ impl<'a> Response<'a> {
         self
     }
 
+    #[allow(dead_code)]
     pub fn message_key(&mut self, name: &'a str) -> &mut Self {
         self.message_key = name;
         self

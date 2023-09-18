@@ -14,6 +14,7 @@ pub struct User {
     pub avatar: String,
     pub password: String,
     pub password_reset_token: Option<String>,
+    pub api_key: String,
     pub role: String,
     pub last_logged_in_at: Option<DateTime<Utc>>,
     pub created_at: Option<DateTime<Utc>>,

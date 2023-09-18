@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html>
+<body>
+
+<h1>The iframe element</h1>
+
+<iframe id="framedpay_id" src="http://localhost/load?collect_address=true&accepts=all&api_key=gIjZPOrSgQACC5crjP1vXxzQsSZRqQFXCWxfGIs1kA1IVQedbK0jgsJQt7EsBnLF0Vo0aMj2MSAQmyOVTEqAtRvuEGRGh6emLguu&name=abc" width="100%" height="500">
+</iframe>
+<script>
+  window.addEventListener('message', function(event) {
+    console.log(event.data); // Message received from parent
+    console.log("Message received from the parent: "); // Message received from parent
+  });
+</script>
+</body>
+</html>

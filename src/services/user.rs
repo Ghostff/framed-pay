@@ -1,18 +1,18 @@
 use actix_web::{web, web::Data};
 
-use chrono::{DateTime, Utc, Duration, prelude::*};
+use chrono::{DateTime, Utc, Duration};
 use uuid::Uuid;
 
-use crate::{DBPool, models::users::{User}, repositories as repo };
+use crate::{DBPool, models::user_model::{User}, repositories as repo };
 use crate::errors::{AuthenticationError, DatabaseError};
-use crate::models::users::{VerifyPasswordResetTokenSchema};
+use crate::models::user_model::{VerifyPasswordResetTokenSchema};
 
 pub async fn get_user_by_token(conn: &Data<DBPool>, payload: &VerifyPasswordResetTokenSchema) -> Result<User, Box<dyn std::error::Error>> {
     let uuid = Uuid::parse_str(payload.uid.as_str()).map_err(|_| DatabaseError::InvalidUuid)?;
 
     let db = conn.clone();
     let token = payload.token.clone();
-    let user = web::block(move || repo::user::find_by_password_reset_token(&db, token, uuid))
+    let user = web::block(move || repo::user_repository::find_by_password_reset_token(&db, token, uuid))
         .await
         .map_err(|e| DatabaseError::DatabaseConnectionFailed(format!("{:?}", e)))??;
 

@@ -6,17 +6,17 @@ pub fn init(cfg: &mut web::ServiceConfig) {
 
 
     cfg.app_data(JsonConfig::default().error_handler(services::response::Response::error_handler))
-        .route("healthcheck", web::get().to(controllers::home::healthcheck))
-        .route("register", web::post().to(controllers::auth::register))
-        .route("login", web::post().to(controllers::auth::login))
-        .route("change-password", web::put().to(controllers::auth::change_password))
-        .route("reset-password", web::post().to(controllers::auth::password_reset))
-        .route("verify-password-reset-token", web::post().to(controllers::auth::verify_password_reset_token))
-        .route("logout", web::get().to(controllers::auth::logout))
+        .route("healthcheck", web::get().to(controllers::home_controller::healthcheck))
+        .route("register", web::post().to(controllers::auth_controller::register))
+        .route("login", web::post().to(controllers::auth_controller::login))
+        .route("change-password", web::put().to(controllers::auth_controller::change_password))
+        .route("reset-password", web::post().to(controllers::auth_controller::password_reset))
+        .route("verify-password-reset-token", web::post().to(controllers::auth_controller::verify_password_reset_token))
+        .route("logout", web::get().to(controllers::auth_controller::logout))
         .service(
             web::scope("")
-                .route("user", web::get().to(controllers::user::me))
-                .default_service(web::to(controllers::home::page_not_found))
+                .route("user", web::get().to(controllers::user_controller::me))
+                .default_service(web::to(controllers::home_controller::page_not_found))
         )
-        .default_service(web::to(controllers::home::page_not_found));
+        .default_service(web::to(controllers::home_controller::page_not_found));
 }

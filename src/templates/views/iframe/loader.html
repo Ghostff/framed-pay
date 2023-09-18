@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Credit Card Payment</title>
+    <style>
+        .hidden {
+            display: none;
+        }
+        .error-placeholder {
+            color: red;
+        }
+    </style>
+</head>
+<body>
+
+{% macro select(name, options, label="") %}
+<div class="{{name}}-cls">
+    {% if label != "" %}
+    <label for="{{name}}-id">{{ label }}</label>
+    {% endif %}
+    <select id="{{name}}-id" name="{{name}}">
+        {% for o in options %}
+        <option value="{{o}}">{{o}}</option>
+        {% endfor %}
+    </select>
+    <div class="error-placeholder"></div>
+</div>
+{% endmacro select %}
+
+{% macro input(name, min="2", max="255", label="", type="text") %}
+<div class="{{name}}-cls">
+    {% if label != "" %}
+    <label for="{{name}}-id">{{ label }}</label>
+    {% endif %}
+    <input type="text" id="{{name}}-id" name="{{name}}" minlength="{{min}}" maxlength="{{max}}">
+    <div class="error-placeholder"></div>
+</div>
+{% endmacro input %}
+
+{% macro tab(name, label) %}
+<div class="{{name}}-radio-container">
+    <input
+        type="radio"
+        id="{{name}}-radio"
+        name="toggles"
+        value="{{ name }}"
+        data-toggle="{{ name }}-container"
+        {% if default_accepts == name %}checked{% endif %}
+    >
+    <label for="{{name}}-radio">{{ label }}</label>
+</div>
+{% endmacro tab %}
+
+{% if error != "" %}
+<div style="color:red;text-align:center">{{ error }}</div>
+{% else %}
+
+{% set is_multi_pm = accepts | length > 1 or accepts[0] == "all" %}
+<h2>Payment Form</h2>
+<form method="post" action="renderer.html" id="payment-form">
+   <div class="tab">
+       {% if is_multi_pm %}
+           {% for type in accepts %}
+                {% if type == "cc" or type == "all" %}
+                    {{ self::tab(name="cc", label="Credit Card") }}
+                {% endif %}
+                {% if type == "ach" or type == "all" %}
+                    {{ self::tab(name="ach", label="Bank Account") }}
+               {% endif %}
+           {% endfor %}
+       {% endif %}
+   </div>
+
+    {% for type in accepts %}
+    <div id="payment-methods">
+        {% if type == "cc" or type == "all" %}
+        <div id="cc-container" class="payment-methods row">
+            {{ self::input(name="cc_name", min=3, max=200, label="Name on Card") }}
+            {{ self::input(name="cc_number", min=13, max=20, label="Credit card number") }}
+            {{ self::input(name="cc_exp_month", min=2, max=2, label="Exp Month") }}
+            {{ self::input(name="cc_exp_year", min=4, max=4, label="Exp Year") }}
+            {{ self::input(name="cc_cvv", min=3, max=3, label="CVV") }}
+        </div>
+        {% endif %}
+
+        {% if type == "ach" or type == "all" %}
+        <div id="ach-container" class="payment-methods row">
+            {{ self::input(name="ach_name", min=3, max=200, label="Account Holder Name") }}
+            {{ self::input(name="ach_routing_number", max=50, label="Routing Number") }}
+            {{ self::input(name="ach_number", max=50, label="Account Number") }}
+            {{ self::select(name="ach_bank_type", options=["checking", "savings"], label="Account Type") }}
+        </div>
+        {% endif %}
+    </div>
+    {% endfor %}
+
+    {% if collect_address %}
+    <div id="address-container" class="row">
+        {{ self::input(name="city", max=200, label="City") }}
+        {{ self::input(name="state", max=200, label="State/Province") }}
+        {{ self::input(name="zip", max=20, label="Postal/ZIP Code") }}
+        {{ self::select(name="country", options=["Monaco", "Mongolia", "Montenegro", "Montserrat"], label="Country") }}
+    </div>
+    {% endif %}
+
+    <input type="hidden" name="payment_id" id="payment_id">
+    <div id="form-error" class="error-placeholder"></div>
+    <button type="submit">Submit</button>
+</form>
+<script>
+window.onload = function() {
+  var toggles = document.getElementsByName('toggles');
+  var form = document.getElementById('payment-form');
+  var formError = document.getElementById('form-error');
+  var paymentId = document.getElementById('payment_id');
+
+  // window.parent.postMessage("Hello", "*");
+  if ("{{ is_multi_pm }}" === "true") {
+    registerToggles();
+  }
+
+  var inputs = cacheInputs();
+  registerFormSubmit();
+
+  function registerToggles() {
+    var divs = document.querySelectorAll('.payment-methods');
+    function hide(ignoreId) {
+      return divs.forEach(function (div) {
+        if (div.id === ignoreId) {
+          div.classList.remove('hidden')
+        } else {
+          div.classList.add('hidden')
+        }
+      });
+    }
+
+    // initial hide state
+    hide("{{default_accepts}}-container");
+    toggles.forEach(function (input) {
+      // this just makes sure the right checkbox is checked on reload.
+      if (input.id === "{{default_accepts}}-radio") {
+        input.checked = true;
+      }
+
+      input.addEventListener('click', function (e) {
+        return hide(e.target.getAttribute('data-toggle'));
+      })
+    });
+  }
+
+  function handleError(input, message) {
+    if (message) {
+      input.nextElementSibling.innerText = message;
+      input.classList.add('has-error');
+      return false;
+    }
+
+    input.nextElementSibling.innerText = "";
+    input.classList.remove('has-error')
+    return true;
+  }
+
+  function addValidations(input) {
+    input.validate = function () {
+      var value = input.value.trim();
+      var count = value.length;
+      if (value === "" && !input.hasAttribute("no-validate")) {
+        return handleError(input, "field is required.");
+      } else if (input.minLength && input.minLength > count) {
+        return handleError(input, "field must contain a minimum of " + input.minLength +" characters.");
+      } else if (input.maxLength && input.maxLength < count) {
+        return handleError(input, "field must contain a maximum of " + input.maxLength +" characters.");
+      } else {
+        return handleError(input, void 0);
+      }
+    };
+    input.addEventListener('keyup', input.validate);
+  }
+
+  function cacheInputs() {
+    var inputs = {
+      address: document.querySelectorAll('#address-container input, #address-container select'),
+      payments: {},
+    }
+
+    inputs.address.forEach(addValidations);
+    document.querySelectorAll('#payment-methods .payment-methods').forEach(function (div) {
+      (inputs.payments[div.id] = div.querySelectorAll('input, select')).forEach(addValidations);
+    });
+
+    return inputs;
+  }
+
+  function registerFormSubmit() {
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+
+      var checked;
+      for (var key in toggles) {
+        if (toggles.hasOwnProperty(key) && (checked = toggles[key]).checked) {
+          break;
+        }
+      }
+
+      // keep only selected payment from payments
+      var validatable = Object.assign({}, inputs, { payments: inputs.payments[checked.getAttribute('data-toggle')] });
+      var errorAt = {};
+      var jsonData = { payment_id: paymentId.value }
+
+      for (var key in validatable) {
+        if (validatable.hasOwnProperty(key)) {
+          validatable[key].forEach(function (input) {
+            jsonData[input.name] = input.value;
+            if (!input.validate()) {
+              errorAt[key] = true;
+            }
+          });
+        }
+      }
+
+      var errors = Object.keys(errorAt);
+      if (errors.length > 0) {
+        formError.innerText = "Error occurred: (" + errors.join(", ") + ")";
+        return;
+      }
+
+      formError.innerText = "";
+      var xhr = new XMLHttpRequest();
+      xhr.open("POST", window.location.href, true);
+      xhr.setRequestHeader("Content-Type", "application/json");
+      xhr.onreadystatechange = function () {
+        if (xhr.readyState === XMLHttpRequest.DONE) {
+          var response = JSON.parse(xhr.responseText);
+          if (xhr.status === 200) {
+            console.log("Request successful:", response);
+          } else {
+            formError.innerText = response.error;
+          }
+        }
+      };
+      xhr.send(JSON.stringify(jsonData));
+    })
+  }
+};
+</script>
+{% endif %}
+</body>
+
+</html>

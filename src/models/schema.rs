@@ -14,6 +14,8 @@ diesel::table! {
         password -> Varchar,
         #[max_length = 255]
         password_reset_token -> Nullable<Varchar>,
+        #[max_length = 255]
+        api_key -> Varchar,
         #[max_length = 100]
         role -> Varchar,
         last_logged_in_at -> Nullable<Timestamptz>,

@@ -5,8 +5,8 @@ use actix_web::http::StatusCode;
 use jsonwebtoken::{decode, DecodingKey, Validation};
 use serde::Serialize;
 use crate::{DBPool, repositories};
-use crate::models::jwt::TokenClaims;
-use crate::models::users::User;
+use crate::models::jwt_model::TokenClaims;
+use crate::models::user_model::User;
 use futures_util::future::LocalBoxFuture;
 use crate::config::ENV;
 
@@ -54,7 +54,7 @@ impl FromRequest for User {
             None => return Box::pin(async { fail() })
         };
 
-        let jwt_secret = ENV.jwt_secret.clone();
+        let jwt_secret = ENV.jwt_secret.to_string();
         let db = conn.clone();
 
         Box::pin(async move {
@@ -72,7 +72,7 @@ impl FromRequest for User {
                 Err(_) => return fail()
             };
 
-            let user_result = web::block(move || repositories::user::get_by_id(db, user_id)).await;
+            let user_result = web::block(move || repositories::user_repository::get_by_id(&db, &user_id)).await;
 
             match user_result {
                 Ok(Ok(user)) => Ok(user),

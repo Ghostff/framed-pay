@@ -1,21 +1,17 @@
 use actix_web::{
     cookie::{Cookie, time::Duration as ActixWebDuration},
     http::StatusCode as SC, Responder,
-    web,
 };
 use actix_web::web::Data;
 use actix_web_validator::Json;
 use apalis::redis::RedisStorage;
 use argon2::{Argon2, password_hash::{PasswordHash, PasswordVerifier}};
-use askama::Template;
-use chrono::{ Utc, Duration, prelude::*};
-use diesel::QueryResult;
+use chrono::{ Utc, Duration };
 use jsonwebtoken::{encode, EncodingKey, Header};
-use log::{error, info};
 
-use crate::{DBPool, models::jwt::TokenClaims, services::response::Response, models::users::{LoginUserSchema, RegisterUserSchema, User}, repositories as repo, services};
+use crate::{DBPool, models::jwt_model::TokenClaims, services::response::Response, models::user_model::{LoginUserSchema, RegisterUserSchema, User}, repositories as repo, services};
 use crate::config::{ENV};
-use crate::models::users::{PasswordChangeSchema, ResetUserPasswordSchema, VerifyPasswordResetTokenSchema};
+use crate::models::user_model::{PasswordChangeSchema, ResetUserPasswordSchema, VerifyPasswordResetTokenSchema};
 use crate::services::email::Email;
 
 pub fn get_cookie(value: String, expire_at: i64) -> Cookie<'static> {
@@ -23,28 +19,36 @@ pub fn get_cookie(value: String, expire_at: i64) -> Cookie<'static> {
         .path("/")
         .max_age(ActixWebDuration::new(expire_at, 0))
         .http_only(true)
-        .secure(false) // @todo: remove on prod
+        .secure(!cfg!(debug_assertions)) // @todo: remove on prod
         .finish()
 }
 
 pub async fn register(body: Json<RegisterUserSchema>, conn: Data<DBPool>) -> impl Responder {
     let db = conn.clone();
     let email = body.email.clone();
-    let exists = web::block(move || repo::user::email_exist(&db, email.as_str()))
-        .await
-        .unwrap_or(false);
 
-    if exists {
+    if repo::query(move || repo::user_repository::get_by_email(&db, email.as_str())).await.is_ok() {
         return Response::new().status(SC::CONFLICT).error("A user with email already exist in our system");
     }
 
-    let db = conn.into_inner();
-    let insert_query = repo::query(move || repo::user::create_and_get(
+    let mut api_key;
+    loop {
+        api_key = services::str::get_random(100);
+        let key = api_key.clone();
+        let db = conn.clone();
+        if repo::query(move || repo::user_repository::get_by_api_key(&db, &key)).await.is_err() {
+            break;
+        }
+    }
+
+    let db = conn.clone();
+    let insert_query = repo::query(move || repo::user_repository::create_and_get(
         &db,
         body.first_name.as_str(),
         body.last_name.as_str(),
         body.email.to_string().to_lowercase().as_str(),
-        services::str::hash(&body.password).as_str()
+        services::str::hash(&body.password).as_str(),
+        &api_key
     )).await;
 
     if insert_query.is_err() {
@@ -59,7 +63,7 @@ pub async fn register(body: Json<RegisterUserSchema>, conn: Data<DBPool>) -> imp
 pub async fn login(body: Json<LoginUserSchema>, conn: Data<DBPool>) -> impl Responder {
     let db = conn.clone();
     let email = body.email.to_string();
-    let query_result = repo::query(move || repo::user::get_by_email(&db, &email)).await;
+    let query_result = repo::query(move || repo::user_repository::get_by_email(&db, &email)).await;
 
     if query_result.is_err() {
         Response::new().fetal();
@@ -74,7 +78,7 @@ pub async fn login(body: Json<LoginUserSchema>, conn: Data<DBPool>) -> impl Resp
     let db = conn.clone();
     user.last_logged_in_at = Some(Utc::now());
     let tmp_user = user.clone();
-    let _ = repo::query(move || repo::user::update(&db, &tmp_user)).await;
+    let _ = repo::query(move || repo::user_repository::update(&db, &tmp_user)).await;
 
     Response::new().cookie(get_cookie(create_jwt_token(&user), 60 * 60)).ok(user.get_filtered())
 }
@@ -86,27 +90,27 @@ pub async fn logout(_: User) -> impl Responder {
 pub async fn password_reset(body: Json<ResetUserPasswordSchema>, conn: Data<DBPool>, queue: Data<RedisStorage<Email>>) -> impl Responder {
     let db = conn.clone();
     let email = body.email.to_string();
-    let user_exist = repo::query(move || repo::user::get_by_email(&db, &email)).await;
+    let user_exist = repo::query(move || repo::user_repository::get_by_email(&db, &email)).await;
 
     if user_exist.is_ok() {
         let mut user = user_exist.unwrap();
         let reset_token = services::str::get_random(200);
         let url = format!("{}/password-reset/{reset_token}/{}", ENV.app_url.clone(), user.id);
         let name = user.last_name.clone();
-        let template = crate::templates::PasswordResetTemplate {
-            name: name.as_str(),
-            url: url.as_str(),
-        };
+
+        let mut template = services::templates::Template::new("emails/password_reset.html")
+            .add("name", name.as_str())
+            .add("url", url.as_str());
 
         let db = conn.clone();
         user.password_reset_token = Some(format!("{reset_token}|{}", Utc::now().to_rfc3339()));
-        if repo::query(move || repo::user::update(&db, &user)).await.is_err() {
+        if repo::query(move || repo::user_repository::update(&db, &user)).await.is_err() {
             return Response::new().error("Error resetting password.");
         }
 
         services::queue::dispatch(
             queue,
-            Email::html( body.email.clone(), "Password Reset", template.render().unwrap())
+            Email::html( body.email.clone(), "Password Reset", template.render())
         ).await;
     }
 
@@ -134,7 +138,7 @@ pub async fn change_password(body: Json<PasswordChangeSchema>, conn: Data<DBPool
     user.password_reset_token = None;
     user.password = services::str::hash(&body.password);
 
-    if repo::query(move || repo::user::update(&conn, &user)).await.is_err() {
+    if repo::query(move || repo::user_repository::update(&conn, &user)).await.is_err() {
         return Response::new().fetal();
     }
 
