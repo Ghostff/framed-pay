@@ -44,7 +44,7 @@ pub async fn load(query_params: web::Query<QueryParams>, conn: Data<DBPool>) -> 
     let payment_methods = accepts.split(",").map(|a| a.trim()).collect::<Vec<&str>>();
     let default_accepts = query_params.default_accepts.as_deref().unwrap_or(CC);
 
-    if !payment_methods.iter().all(|m| PAYMENT_METHODS.contains(m) || m == &"all") {
+    if !payment_methods.iter().all(|m| PAYMENT_METHODS.contains(m) || *m == "all") {
         error = &error_msg;
     }
 
@@ -60,7 +60,7 @@ pub async fn load(query_params: web::Query<QueryParams>, conn: Data<DBPool>) -> 
         .add("default_accepts", &default_accepts);
 
     HttpResponse::Ok()
-        .append_header((http::header::X_FRAME_OPTIONS, "ALLOWALL"))
+        .append_header((http::header::X_FRAME_OPTIONS, "allowall"))
         .append_header(http::header::ContentType(mime::TEXT_HTML_UTF_8))
         .body(tpl.render())
 }

@@ -60,7 +60,7 @@ async fn main() -> std::io::Result<()> {
                         .add((header::X_CONTENT_TYPE_OPTIONS, "nosniff"))
                         .add((header::X_XSS_PROTECTION, "1; mode=block"))
                         .add((header::REFERRER_POLICY, "strict-origin-when-cross-origin"))
-                        .add((header::X_FRAME_OPTIONS, "DENY"))
+                        .add((header::X_FRAME_OPTIONS, "deny"))
                         .add((header::STRICT_TRANSPORT_SECURITY, "max-age=63072000; includeSubDomains; preload"))
                 )
                 .app_data(web::Data::new(pool.clone()))
