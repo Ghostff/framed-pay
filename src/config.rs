@@ -19,12 +19,18 @@ pub struct Config {
     pub mail_port: u16,
     pub mail_username: String,
     pub mail_password: String,
+
+    pub jobs_channel_buffer_size: usize,
+    pub max_concurrent_email_job_task: usize,
 }
 
 lazy_static! {
     pub static ref ENV: Config = {
         let jwt_max_age = env::var("JWT_MAX_AGE").expect("JWT_MAX_AGE must be set");
         let mail_port = env::var("MAIL_PORT").expect("MAIL_PORT must be set");
+
+        let jobs_channel_buffer_size = env::var("JOBS_CHANNEL_BUFFER_SIZE").expect("JOBS_CHANNEL_BUFFER_SIZE must be set");
+        let max_concurrent_email_job_task = env::var("MAX_CONCURRENT_EMAIL_JOB_TASK").expect("MAX_CONCURRENT_EMAIL_JOB_TASK must be set");
 
         Config {
             app_name: env::var("APP_NAME").expect("APP_NAME must be set"),
@@ -39,6 +45,8 @@ lazy_static! {
             mail_username: env::var("MAIL_USERNAME").expect("MAIL_USERNAME must be set"),
             mail_port: mail_port.parse::<u16>().unwrap(),
             mail_password: env::var("MAIL_PASSWORD").expect("MAIL_PASSWORD must be set"),
+            jobs_channel_buffer_size: jobs_channel_buffer_size.parse::<usize>().unwrap(),
+            max_concurrent_email_job_task: max_concurrent_email_job_task.parse::<usize>().unwrap(),
         }
     };
 }

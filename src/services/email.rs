@@ -1,11 +1,11 @@
 use std::time::Duration;
-use apalis::prelude::Job;
 use lettre::message::header::ContentType;
 use lettre::{AsyncSmtpTransport, AsyncTransport, Message, Tokio1Executor};
 use lettre::transport::smtp::authentication::Credentials;
 use lettre::transport::smtp::Error;
-use log::{error, info};
+use log::{info};
 use crate::config::ENV;
+use crate::services::job::Queueable;
 
 #[derive(Debug, Clone, serde::Deserialize, serde::Serialize)]
 pub struct Email {
@@ -15,8 +15,9 @@ pub struct Email {
     to: Vec<String>,
 }
 
-impl Job for Email {
-    const NAME: &'static str = "apalis::Email";
+impl Queueable for Email {
+    const NAME: &'static str = "Email";
+    const CHANNEL: u8 = 0;
 }
 
 impl Email {
@@ -58,13 +59,5 @@ impl Email {
 
         Ok(())
     }
-
-    pub async fn run(job: Email, _: apalis::prelude::JobContext) {
-        match job.clone().send().await {
-            Ok(_) => {},
-            Err(e) => error!("Could not send email: {:?}", e),
-        };
-    }
-
 }
 

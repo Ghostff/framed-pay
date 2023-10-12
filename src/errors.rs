@@ -9,19 +9,25 @@ pub enum AuthenticationError {
     InvalidDateTimeFormat,
     #[error("Token expired")]
     TokenExpired,
+    #[error("Could not fetch token")]
+    Error,
 }
 
 #[derive(Debug, thiserror::Error)]
 pub enum DatabaseError {
     #[error("Invalid UUID")]
     InvalidUuid,
+    #[error("No record found")]
+    RecordNotFound,
+    #[error("Duplicate data error: {0}")]
+    DuplicateRecord(sqlx::Error),
     #[error("Database error: {0}")]
-    DatabaseConnectionFailed(String),
+    Every(sqlx::Error),
 }
 
 #[derive(Debug)]
-pub enum FailSafeError<'a> {
-    Error(&'a str),
+pub enum QueueError {
+    Error(String),
 }
 
 

@@ -1,19 +1,19 @@
-use std::path::PathBuf;
-
+use std::thread;
+use std::time::Duration;
 use actix_cors::Cors;
-use actix_files::NamedFile;
-use actix_web::{App, error, Error, HttpRequest, HttpServer, middleware, web};
+use actix_extensible_rate_limit::backend::memory::InMemoryBackend;
+use actix_extensible_rate_limit::backend::SimpleInputFunctionBuilder;
+use actix_extensible_rate_limit::RateLimiter;
+use actix_web::{App, HttpServer, middleware, web};
 use actix_web::http::{header};
-use actix_web::middleware::{Logger, Compress, NormalizePath};
-use apalis::prelude::{Monitor, WithStorage, WorkerBuilder, WorkerFactoryFn};
-use apalis::redis::RedisStorage;
-use diesel::{PgConnection, r2d2};
-use diesel::r2d2::ConnectionManager;
+use actix_web::middleware::{Logger, Compress, NormalizePath, ErrorHandlers};
+use sqlx::postgres::PgPoolOptions;
 use dotenv::dotenv;
-use futures_util::future;
-
+use sqlx::{Pool, Postgres};
+use tokio::sync::mpsc;
+use tokio::sync::mpsc::Receiver;
 use crate::config::{ENV};
-use crate::services::email::Email;
+use crate::services::job::Job;
 
 mod controllers;
 mod models;
@@ -24,90 +24,88 @@ mod repositories;
 mod services;
 mod errors;
 
-async fn spa_index(_req: HttpRequest) -> Result<NamedFile, Error> {
-    let path: PathBuf = "./static/index.html".parse().unwrap();
-    // Check if the file exists before attempting to open it
-    if let Err(err) = std::fs::metadata(&path) {
-        // Return a response with the actual error message
-        return Err(error::ErrorInternalServerError(format!("Error checking file: {}", err)));
-    }
-
-    Ok(NamedFile::open(path)?)
-}
-
-pub type DBPool = r2d2::Pool<ConnectionManager<PgConnection>>;
-
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
-    std::env::set_var("RUST_LOG", "info");
+    std::env::set_var("RUST_LOG", "debug");
     std::env::set_var("RUST_BACKTRACE", "1");
     env_logger::init();
 
     dotenv().ok();
 
-    let manager = ConnectionManager::<PgConnection>::new(ENV.database_url.clone());
-    let pool: DBPool = r2d2::Pool::builder().build(manager).expect("Failed to create pool.");
-    let queue = RedisStorage::connect(ENV.redis_url.clone()).await.expect("Could not connect to redis storage");
-
-    println!("🚀 Server started successfully");
-
-    let queue_data = queue.clone();
-    let http = async {
-        HttpServer::new(move || {
-            let app = App::new().wrap(
-                    middleware::DefaultHeaders::new()
-                        .add((header::CONTENT_SECURITY_POLICY, "default-src 'self';"))
-                        .add((header::X_CONTENT_TYPE_OPTIONS, "nosniff"))
-                        .add((header::X_XSS_PROTECTION, "1; mode=block"))
-                        .add((header::REFERRER_POLICY, "strict-origin-when-cross-origin"))
-                        .add((header::X_FRAME_OPTIONS, "deny"))
-                        .add((header::STRICT_TRANSPORT_SECURITY, "max-age=63072000; includeSubDomains; preload"))
-                )
-                .app_data(web::Data::new(pool.clone()))
-                .app_data(web::Data::new(queue_data.clone()))
-                .configure(routes::web::init)
-                .default_service(web::to(spa_index))
-                .wrap(Logger::default())
-                .wrap(Compress::default())
-                .wrap(NormalizePath::trim())
-                .wrap(Logger::new("%a %{User-Agent}i"));
-
-
-            let api_scope = web::scope("/api").configure(routes::api::init);
-            // cors on dev
-            #[cfg(debug_assertions)]
-            {
-                return app.service(api_scope.wrap(
-                    Cors::default()
-                        .allowed_origin("http://localhost:3000")
-                        .allowed_methods(vec!["GET", "POST", "DELETE", "PUT"])
-                        .allowed_headers(vec![header::CONTENT_TYPE, header::AUTHORIZATION, header::ACCEPT])
-                        .supports_credentials()
-                        .max_age(3600)
-                ));
-            }
-
-            #[cfg(not(debug_assertions))]
-            return app.service(api_scope);
-        })
-            .bind(("0.0.0.0", 80))?
-            .run()
-            .await?;
-
-        Ok(())
+    let pool = match PgPoolOptions::new()
+        .max_connections(10)
+        .connect(&ENV.database_url)
+        .await
+    {
+        Ok(pool) => pool,
+        Err(err) => {
+            println!("🔥 Failed to connect to the database: {:?}", err);
+            std::process::exit(1);
+        }
     };
 
-    let worker = Monitor::new()
-        .register_with_count(2, move |index| {
-            WorkerBuilder::new(format!("email-worker-{index}"))
-                .with_storage(queue.clone())
-                .build_fn(Email::run)
-        })
-        .run();
+    let (sender, receiver) = mpsc::channel::<u8>(ENV.jobs_channel_buffer_size);
+    let job = Job::new(pool.clone(), sender);
 
-    future::try_join(http, worker).await?;
+    start_job_serve(job.clone(), receiver);
+    start_web_server(pool, job).await
+}
 
-    Ok(())
+fn start_job_serve(job: Job, mut receiver: Receiver<u8>) {
+    thread::spawn(move || {
+        let runtime = tokio::runtime::Runtime::new().unwrap();
+        runtime.block_on(async {
+            while let Some(channel) = receiver.recv().await {
+                job.dispatch(channel).await;
+            }
+        });
+    });
+}
+
+async fn start_web_server(pool: Pool<Postgres>, job: Job) -> std::io::Result<()> {
+    // A backend is responsible for storing rate limit data and choosing whether to allow/deny requests
+    let backend = InMemoryBackend::builder().build();
+
+    HttpServer::new(move || {
+        // Assign a limit of 5 requests per minute per client ip address
+        let input = SimpleInputFunctionBuilder::new(Duration::from_secs(60), 200)
+            .real_ip_key()
+            .build();
+
+        let throttle = RateLimiter::builder(backend.clone(), input)
+            .add_headers()
+            .build();
+
+        let cors = Cors::permissive();
+
+        App::new()
+            .wrap(throttle)
+            .wrap(
+                middleware::DefaultHeaders::new()
+                    .add((header::CONTENT_SECURITY_POLICY, "default-src 'self';"))
+                    .add((header::X_CONTENT_TYPE_OPTIONS, "nosniff"))
+                    .add((header::X_XSS_PROTECTION, "1; mode=block"))
+                    .add((header::REFERRER_POLICY, "strict-origin-when-cross-origin"))
+                    .add((header::X_FRAME_OPTIONS, "deny"))
+                    .add((header::STRICT_TRANSPORT_SECURITY, "max-age=63072000; includeSubDomains; preload"))
+            )
+            .app_data(web::Data::new(pool.clone()))
+            .app_data(web::Data::new(job.clone()))
+            .service(web::scope("/api")
+                .wrap(cors)
+                .configure(routes::api::init)
+            )
+            .configure(routes::web::init)
+            .default_service(web::to(controllers::home_controller::spa_index))
+            .wrap(Logger::default())
+            .wrap(Compress::default())
+            .wrap(NormalizePath::trim())
+            .wrap(ErrorHandlers::new().default_handler(middlewares::error_middleware::web))
+            .wrap(Logger::new("%a %{User-Agent}i"))
+    })
+        .bind(("0.0.0.0", 80))?
+        .run()
+        .await
 }
 // cargo watch -i "web/*" -x run
 // cargo modules generate tree

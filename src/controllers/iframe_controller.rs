@@ -1,7 +1,8 @@
 use actix_web::{http, HttpResponse, Responder, web, web::Data};
-use crate::{DBPool, repositories as repo, services};
+use sqlx::PgPool;
+use crate::{repositories as repo, services};
 use crate::models::transaction::Transaction;
-use crate::services::response::Response;
+use crate::services::json_response::JsonResponse;
 
 #[derive(serde::Deserialize)]
 pub struct QueryParams {
@@ -20,16 +21,14 @@ const ACH: &str = "ach";
 const PAYMENT_METHODS: [&str; 2] = [&CC, &ACH];
 
 
-pub async fn load(query_params: web::Query<QueryParams>, conn: Data<DBPool>) -> impl Responder {
+pub async fn load(query_params: web::Query<QueryParams>, conn: Data<PgPool>) -> impl Responder {
     let error_msg = Some(String::from("Invalid api token"));
     let mut error = &error_msg;
-    let db = conn.clone();
-    let api_key = query_params.api_key.to_string();
 
     // check if api key is valid
-    if repo::query(move || repo::user_repository::get_by_api_key(&db, &api_key)).await.is_ok() {
+    /*if repo::query(move || repo::user_repository::get_by_api_key(&db, &api_key)).await.is_ok() {
         error = &None;
-    }
+    }*/
 
     if error.is_none() {
         // @todo: check if user plan
@@ -65,8 +64,8 @@ pub async fn load(query_params: web::Query<QueryParams>, conn: Data<DBPool>) -> 
         .body(tpl.render())
 }
 
-pub async fn submit(form_data: web::Json<Transaction>, conn: Data<DBPool>) -> impl Responder {
-    Response::new().error("hello")
+pub async fn submit(form_data: web::Json<Transaction>, _: Data<PgPool>) -> impl Responder {
+    JsonResponse::new().error("hello")
 
 
     // Response::new().ok(json!(form_data))

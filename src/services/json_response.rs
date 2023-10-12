@@ -1,22 +1,19 @@
-use std::collections::HashMap;
+use std::fmt::Debug;
 
-use actix_web::{error, HttpRequest, HttpResponse};
+use actix_web::{ HttpResponse};
 use actix_web::cookie::Cookie;
-use actix_web::error::InternalError;
 use actix_web::http::StatusCode;
-use actix_web_validator::Error;
-use actix_web_validator::Error::JsonPayloadError;
 use serde::Serialize;
 use serde_json::{json, Value};
 
-pub struct Response<'a> {
+pub struct JsonResponse<'a> {
     status: StatusCode,
     message_key: &'a str,
     payload_key: &'a str,
     cookie: Option<Cookie<'a>>,
 }
 
-impl<'a> Response<'a> {
+impl<'a> JsonResponse<'a> {
     pub fn new() -> Self {
         Self {
             status: StatusCode::INTERNAL_SERVER_ERROR,
@@ -61,12 +58,17 @@ impl<'a> Response<'a> {
     }
 
     // Internal server error.
-    pub fn fetal(&mut self) -> HttpResponse {
-        self.build("Internal server error")
+    pub fn fetal<T: Debug>(e: T) -> HttpResponse {
+        log::error!("{:?}", e);
+        return Self::new().build("Internal server error")
     }
 
-    pub fn success(&mut self) -> HttpResponse {
-        self.ok("Success")
+    pub fn unauthorized(message: &str) -> HttpResponse  {
+        return Self::new().status(StatusCode::UNAUTHORIZED).error(message);
+    }
+
+    pub fn success() -> HttpResponse {
+        return Self::new().message_key("message").ok("Success")
     }
 
     pub fn error(&mut self, message: impl Serialize) -> HttpResponse {
@@ -75,43 +77,6 @@ impl<'a> Response<'a> {
 
     pub fn ok(&mut self, message: impl Serialize) -> HttpResponse {
         self.status(StatusCode::OK).build(message)
-    }
-
-    pub fn error_handler(err: Error, _: &HttpRequest) -> actix_web::Error {
-        let res: HttpResponse;
-
-        match err {
-            Error::Validate(error) => {
-                let mut errors: HashMap<String, Vec<String>> = HashMap::new();
-
-                for (key, error) in error.field_errors() {
-                    for field in error {
-                        if let Some(message) = &field.message {
-                            errors.insert(key.to_string(), vec![message.to_string()]);
-                            break; // On error at a time.
-                        }
-                    }
-                }
-
-                res = Self::new()
-                    .status(StatusCode::BAD_REQUEST)
-                    .payload_key("errors")
-                    .error(&errors);
-            }
-            JsonPayloadError(e) => {
-                let message = match &e {
-                    error::JsonPayloadError::Deserialize(er) => er.to_string().replace("`", "\""),
-                    _ => "Invalid JSON payload".to_string()
-                };
-
-                res = Self::new().error(message);
-            }
-            _ => {
-                res = Self::new().error("Could not process request");
-            }
-        }
-
-        InternalError::from_response("validation error", res).into()
     }
 
     fn build(&mut self, message: impl Serialize) -> HttpResponse {

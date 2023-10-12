@@ -1,11 +1,11 @@
 use actix_web::web;
 use actix_web_validator::JsonConfig;
-use crate::{controllers, services};
+use crate::{controllers};
+use crate::middlewares::error_middleware::json_validation;
 
 pub fn init(cfg: &mut web::ServiceConfig) {
 
-
-    cfg.app_data(JsonConfig::default().error_handler(services::response::Response::error_handler))
+    cfg.app_data(JsonConfig::default().error_handler(json_validation))
         .route("healthcheck", web::get().to(controllers::home_controller::healthcheck))
         .route("register", web::post().to(controllers::auth_controller::register))
         .route("login", web::post().to(controllers::auth_controller::login))

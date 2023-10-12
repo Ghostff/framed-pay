@@ -1,11 +1,8 @@
 use chrono::{DateTime, Utc};
-use diesel::{AsChangeset, Insertable, Queryable};
 use serde::{Deserialize, Serialize};
 use validator::Validate;
 
-#[derive(AsChangeset)]
-#[derive(Debug, Clone, Serialize, Deserialize, Queryable, Insertable)]
-#[diesel(table_name = crate::models::schema::users, treat_none_as_null = true)]
+#[derive(Debug, Clone, Serialize, Deserialize, sqlx::FromRow)]
 pub struct User {
     pub id: uuid::Uuid,
     pub first_name: String,

@@ -1,14 +1,16 @@
 use std::fmt;
-use actix_web::{dev::Payload, Error, FromRequest, http, HttpRequest, web};
+use actix_web::{dev::Payload, Error, FromRequest, HttpRequest, web};
 use actix_web::error::{ErrorUnauthorized};
 use actix_web::http::StatusCode;
 use jsonwebtoken::{decode, DecodingKey, Validation};
 use serde::Serialize;
-use crate::{DBPool, repositories};
+use crate::{repositories};
 use crate::models::jwt_model::TokenClaims;
 use crate::models::user_model::User;
 use futures_util::future::LocalBoxFuture;
+use sqlx::PgPool;
 use crate::config::ENV;
+use crate::services::cookie::{AccessTokenCookie, Cookie};
 
 #[derive(Debug, Serialize)]
 struct UnAuthorizedResponse<'a> {
@@ -34,33 +36,26 @@ impl FromRequest for User {
     type Future = LocalBoxFuture<'static, Result<Self, Self::Error>>;
 
     fn from_request(req: &HttpRequest, _: &mut Payload) -> Self::Future {
-        let conn = match req.app_data::<web::Data<DBPool>>() {
-            Some(data) => data.get_ref(),
+        let conn = match req.app_data::<web::Data<PgPool>>() {
+            Some(data) => data.get_ref().clone(),
             None => return Box::pin(async { fail() })
         };
 
         let token = req
-            .cookie("token")
-            .map(|c| c.value().to_string())
-            .or_else(|| {
-                req.headers()
-                    .get(http::header::AUTHORIZATION)
-                    .and_then(|h| h.to_str().ok())
-                    .map(|h| h[7..].to_string())
-            });
+            .cookie(AccessTokenCookie::NAME)
+            .map(|c| c.value().to_string());
 
         let token = match token {
             Some(token) => token,
             None => return Box::pin(async { fail() })
         };
 
-        let jwt_secret = ENV.jwt_secret.to_string();
-        let db = conn.clone();
+        let jwt_secret = ENV.jwt_secret.as_str();
 
         Box::pin(async move {
             let claims = match decode::<TokenClaims>(
                 &token,
-                &DecodingKey::from_secret(jwt_secret.as_ref()),
+                &DecodingKey::from_secret(jwt_secret.as_bytes()),
                 &Validation::default(),
             ) {
                 Ok(c) => c.claims,
@@ -72,13 +67,10 @@ impl FromRequest for User {
                 Err(_) => return fail()
             };
 
-            let user_result = web::block(move || repositories::user_repository::get_by_id(&db, &user_id)).await;
-
-            match user_result {
-                Ok(Ok(user)) => Ok(user),
+            match repositories::user_repository::find(&conn, &user_id).await {
+               Ok(user) => Ok(user),
                 _ => fail()
             }
         })
     }
-
 }
