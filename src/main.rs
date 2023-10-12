@@ -47,11 +47,11 @@ async fn main() -> std::io::Result<()> {
     let (sender, receiver) = mpsc::channel::<u8>(ENV.jobs_channel_buffer_size);
     let job = Job::new(pool.clone(), sender);
 
-    start_job_serve(job.clone(), receiver);
+    start_job_server(job.clone(), receiver);
     start_web_server(pool, job).await
 }
 
-fn start_job_serve(job: Job, mut receiver: Receiver<u8>) {
+fn start_job_server(job: Job, mut receiver: Receiver<u8>) {
     thread::spawn(move || {
         let runtime = tokio::runtime::Runtime::new().unwrap();
         runtime.block_on(async {
