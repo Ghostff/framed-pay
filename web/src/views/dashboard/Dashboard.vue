@@ -10,7 +10,7 @@
 
       <div class="w-full flex items-center justify-end">
         <div class="flex flex-row items-center justify-end gap-2">
-          <ProfileMenu :menu="[MenuItem.route('Profile', 'profile', 'user')]" />
+          <ProfileMenu :menu="[MenuItem.route('Profile', {name: 'profile'}, 'user')]" />
         </div>
       </div>
     </nav>
@@ -60,10 +60,9 @@
     </div>
     <nav class="hs-accordion-group p-6 w-full flex flex-col flex-wrap" data-hs-accordion-always-open>
       <ul class="space-y-0.5">
-        <NavLink title="Dashboard" :is-active="routeName == 'dashboard'" color="pink" :icon="IconHouse" />
+        <NavLink name="dashboard" color="pink" :icon="IconHouse" />
         <NavLink
-          title="Integrations"
-          :is-active="routeName == 'integrations'"
+          name="integrations"
           color="purple"
           :icon="IconCircleNodes"
           :sub-menu="[
@@ -72,8 +71,8 @@
             new GatewayItem('3', 'NMI', 'https://icons8.com/icon/24459/webhook')
           ]"
         />
-        <NavLink title="Plans" :is-active="routeName == 'plan'" color="green" :icon="IconStack" />
-        <NavLink title="Documentation" :is-active="routeName == 'documentation'" color="orange" :icon="IconBookHalf" />
+        <NavLink name="plans" color="green" :icon="IconStack" />
+        <NavLink name="documentation" color="orange" :icon="IconBookHalf" />
       </ul>
     </nav>
   </div>

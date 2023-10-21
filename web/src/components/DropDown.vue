@@ -45,19 +45,23 @@
           v-for="(menu, j) in menus as MenuItem[]"
           :key="`${i}-${j}`"
         >
-          <component
-            :is="menu.isRoute ? 'router-link' : 'a'"
-            :to="menu.isRoute ? menu.action : void 0"
+          <router-link
+            v-if="menu.isRoute"
+            :to="menu.action"
+            class="flex items-center gap-x-3.5 py-2 px-3 rounded-md text-sm text-gray-800 hover:bg-gray-100 focus:ring-2 focus:ring-blue-500 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-gray-300"
+          >
+            <font-awesome-icon v-if="menu.iconName" :icon="menu.iconName"/>
+            {{ menu.label }}
+          </router-link>
+          <a
+            v-else
             class="flex items-center gap-x-3.5 py-2 px-3 rounded-md text-sm text-gray-800 hover:bg-gray-100 focus:ring-2 focus:ring-blue-500 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-gray-300"
             href="#"
             @click.prevent="menu.action"
           >
-            <font-awesome-icon
-              v-if="menu.iconName"
-              :icon="menu.iconName"
-            />
+            <font-awesome-icon v-if="menu.iconName" :icon="menu.iconName"/>
             {{ menu.label }}
-          </component>
+          </a>
         </template>
       </div>
     </div>

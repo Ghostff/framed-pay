@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router';
 import LandingPage from '@/views/LandingPage.vue';
 import Dashboard from '@/views/dashboard/Dashboard.vue';
 import Index from '@/views/dashboard/pages/Index.vue';
+import Profile from "@/views/dashboard/pages/Profile.vue";
 
 const router = createRouter({
   history: createWebHistory(),
@@ -37,13 +38,20 @@ const router = createRouter({
         }
       ]
     },
+    { path: '/documentation', name: 'documentation', component: Profile },
     {
       path: '/dashboard',
       component: Dashboard,
       meta: {
         requiresAuth: true
       },
-      children: [{ path: '', name: 'dashboard', component: Index }]
+      children: [
+        { path: '', name: 'dashboard', component: Index },
+        { path: 'profile', name: 'profile', component: Profile },
+        { path: 'integrations', name: 'integrations', component: Profile },
+        { path: 'integrations/:id', name: 'integrations-vendor', component: Profile },
+        { path: 'plans', name: 'plans', component: Profile },
+      ]
     }
   ]
 });

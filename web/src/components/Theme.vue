@@ -1,110 +1,126 @@
 <template>
-    <a class="hs-dark-mode-active:hidden block hs-dark-mode group flex items-center text-gray-600 hover:text-blue-600 font-medium dark:text-gray-400 dark:hover:text-gray-500" href="#!" data-hs-theme-click-value="dark">
-        <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-            <path d="M6 .278a.768.768 0 0 1 .08.858 7.208 7.208 0 0 0-.878 3.46c0 4.021 3.278 7.277 7.318 7.277.527 0 1.04-.055 1.533-.16a.787.787 0 0 1 .81.316.733.733 0 0 1-.031.893A8.349 8.349 0 0 1 8.344 16C3.734 16 0 12.286 0 7.71 0 4.266 2.114 1.312 5.124.06A.752.752 0 0 1 6 .278zM4.858 1.311A7.269 7.269 0 0 0 1.025 7.71c0 4.02 3.279 7.276 7.319 7.276a7.316 7.316 0 0 0 5.205-2.162c-.337.042-.68.063-1.029.063-4.61 0-8.343-3.714-8.343-8.29 0-1.167.242-2.278.681-3.286z"/>
-        </svg>
-    </a>
-    <a class="hs-dark-mode-active:block hidden hs-dark-mode group flex items-center text-gray-600 hover:text-blue-600 font-medium dark:text-gray-400 dark:hover:text-gray-500" href="#!" data-hs-theme-click-value="light">
-        <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-            <path d="M8 11a3 3 0 1 1 0-6 3 3 0 0 1 0 6zm0 1a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM8 0a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 0zm0 13a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 13zm8-5a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2a.5.5 0 0 1 .5.5zM3 8a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2A.5.5 0 0 1 3 8zm10.657-5.657a.5.5 0 0 1 0 .707l-1.414 1.415a.5.5 0 1 1-.707-.708l1.414-1.414a.5.5 0 0 1 .707 0zm-9.193 9.193a.5.5 0 0 1 0 .707L3.05 13.657a.5.5 0 0 1-.707-.707l1.414-1.414a.5.5 0 0 1 .707 0zm9.193 2.121a.5.5 0 0 1-.707 0l-1.414-1.414a.5.5 0 0 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .707zM4.464 4.465a.5.5 0 0 1-.707 0L2.343 3.05a.5.5 0 1 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .708z"/>
-        </svg>
-    </a>
+  <a
+      class="hs-dark-mode-active:hidden block hs-dark-mode group flex items-center text-gray-600 hover:text-blue-600 font-medium dark:text-gray-400 dark:hover:text-gray-500"
+      href="#"
+      data-hs-theme-click-value="dark"
+  >
+    <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+         viewBox="0 0 16 16">
+      <path
+          d="M6 .278a.768.768 0 0 1 .08.858 7.208 7.208 0 0 0-.878 3.46c0 4.021 3.278 7.277 7.318 7.277.527 0 1.04-.055 1.533-.16a.787.787 0 0 1 .81.316.733.733 0 0 1-.031.893A8.349 8.349 0 0 1 8.344 16C3.734 16 0 12.286 0 7.71 0 4.266 2.114 1.312 5.124.06A.752.752 0 0 1 6 .278zM4.858 1.311A7.269 7.269 0 0 0 1.025 7.71c0 4.02 3.279 7.276 7.319 7.276a7.316 7.316 0 0 0 5.205-2.162c-.337.042-.68.063-1.029.063-4.61 0-8.343-3.714-8.343-8.29 0-1.167.242-2.278.681-3.286z"/>
+    </svg>
+  </a>
+  <a
+      class="hs-dark-mode-active:block hidden hs-dark-mode group flex items-center text-gray-600 hover:text-blue-600 font-medium dark:text-gray-400 dark:hover:text-gray-500"
+      href="#"
+      data-hs-theme-click-value="light"
+  >
+    <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+         viewBox="0 0 16 16">
+      <path
+          d="M8 11a3 3 0 1 1 0-6 3 3 0 0 1 0 6zm0 1a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM8 0a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 0zm0 13a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 13zm8-5a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2a.5.5 0 0 1 .5.5zM3 8a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2A.5.5 0 0 1 3 8zm10.657-5.657a.5.5 0 0 1 0 .707l-1.414 1.415a.5.5 0 1 1-.707-.708l1.414-1.414a.5.5 0 0 1 .707 0zm-9.193 9.193a.5.5 0 0 1 0 .707L3.05 13.657a.5.5 0 0 1-.707-.707l1.414-1.414a.5.5 0 0 1 .707 0zm9.193 2.121a.5.5 0 0 1-.707 0l-1.414-1.414a.5.5 0 0 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .707zM4.464 4.465a.5.5 0 0 1-.707 0L2.343 3.05a.5.5 0 1 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .708z"/>
+    </svg>
+  </a>
 </template>
 
 <script setup lang="ts">
-import {onMounted} from "vue";
+import {nextTick, onMounted} from "vue";
 
 
-class ThemeAppearance
-{
-    constructor() {
-        const defaultTheme: string = 'default';
-        let theme: string = localStorage.getItem('hs_theme') || defaultTheme;
+class ThemeAppearance {
+  constructor() {
+    const defaultTheme: string = 'default';
+    let theme: string = localStorage.getItem('hs_theme') || defaultTheme;
 
-        if (document.querySelector('html')?.classList.contains('dark')) return;
-        this.setAppearance(theme);
+    if (document.querySelector('html')?.classList.contains('dark')) return;
+    this.setAppearance(theme);
+  }
+
+  _resetStylesOnLoad(): HTMLElement {
+    const resetStyle: HTMLElement = document.createElement('style');
+    resetStyle.innerText = `*{transition: unset !important;}`;
+    resetStyle.setAttribute('data-hs-appearance-onload-styles', '');
+    document.head.appendChild(resetStyle);
+
+    return resetStyle;
+  }
+
+  setAppearance(theme: string | null, saveInStore: boolean = true, dispatchEvent: boolean = true): void {
+    if (theme === null) {
+      return
     }
-    _resetStylesOnLoad(): HTMLElement {
-        const resetStyle: HTMLElement = document.createElement('style');
-        resetStyle.innerText = `*{transition: unset !important;}`;
-        resetStyle.setAttribute('data-hs-appearance-onload-styles', '');
-        document.head.appendChild(resetStyle);
 
-        return resetStyle;
+    const resetStyleElement = this._resetStylesOnLoad();
+    if (saveInStore) {
+      localStorage.setItem('hs_theme', theme);
     }
-    setAppearance(theme: string|null, saveInStore: boolean = true, dispatchEvent: boolean = true): void {
-        if (theme === null) {
-            return
-        }
 
-        const resetStyleElement = this._resetStylesOnLoad();
-        if (saveInStore) {
-            localStorage.setItem('hs_theme', theme);
-        }
-
-        if (theme === 'auto') {
-            theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'default';
-        }
-
-        const html: HTMLElement|null = document.querySelector('html');
-        if (html !== null) {
-            html.classList.remove('dark', 'default', 'auto');
-            html.classList.add(this.getOriginalAppearance());
-        }
-
-        setTimeout(resetStyleElement.remove);
-
-        if (dispatchEvent) {
-            window.dispatchEvent(new CustomEvent('on-hs-appearance-change', {detail: theme}));
-        }
+    if (theme === 'auto') {
+      theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'default';
     }
-    getAppearance(): string {
-        let theme: string = this.getOriginalAppearance();
-        if (theme === 'auto') {
-            theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'default';
-        }
-        return theme;
+
+    const html: HTMLElement | null = document.querySelector('html');
+    if (html !== null) {
+      html.classList.remove('dark', 'default', 'auto');
+      html.classList.add(this.getOriginalAppearance());
     }
-    getOriginalAppearance(): string {
-        const defaultTheme: string = 'default';
-        return localStorage.getItem('hs_theme') || defaultTheme;
+
+    // setTimeout(resetStyleElement.remove) causes:
+    // Uncaught TypeError: 'remove' called on an object that does not implement interface Element.
+    setTimeout(() => resetStyleElement.remove());
+
+
+    if (dispatchEvent) {
+      window.dispatchEvent(new CustomEvent('on-hs-appearance-change', {detail: theme}));
     }
+  }
+
+  getAppearance(): string {
+    let theme: string = this.getOriginalAppearance();
+    if (theme === 'auto') {
+      theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'default';
+    }
+    return theme;
+  }
+
+  getOriginalAppearance(): string {
+    const defaultTheme: string = 'default';
+    return localStorage.getItem('hs_theme') || defaultTheme;
+  }
 }
 
-onMounted(() => {
-    const HSThemeAppearance = new ThemeAppearance();
+onMounted(async () => {
+  const HSThemeAppearance = new ThemeAppearance();
 
-    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
-        if (HSThemeAppearance.getOriginalAppearance() === 'auto') {
-            HSThemeAppearance.setAppearance('auto', false)
-        }
-    })
+  window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
+    if (HSThemeAppearance.getOriginalAppearance() === 'auto') {
+      HSThemeAppearance.setAppearance('auto', false)
+    }
+  })
 
-    window.addEventListener('load', () => {
-        const clickableTheme = document.querySelectorAll('[data-hs-theme-click-value]')
-        const switchableTheme = document.querySelectorAll('[data-hs-theme-switch]')
+  const clickableTheme = document.querySelectorAll('[data-hs-theme-click-value]')
+  const switchableTheme = document.querySelectorAll('[data-hs-theme-switch]')
 
-        clickableTheme.forEach((item: Element) => {
-            item.addEventListener('click', () => HSThemeAppearance.setAppearance(
-                item.getAttribute('data-hs-theme-click-value'),
-                true,
-            ))
-        })
+  clickableTheme.forEach((item: Element) => {
+    item.addEventListener('click', (e: Event) => {
+      e.preventDefault();
+      HSThemeAppearance.setAppearance(item.getAttribute('data-hs-theme-click-value'), true)
+    });
+  })
 
-        switchableTheme.forEach((item: Element) => {
-            item.addEventListener('change', (e: Event) => {
-                HSThemeAppearance.setAppearance((e.target as HTMLInputElement).checked ? 'dark' : 'default')
-            });
+  switchableTheme.forEach((item: Element) => {
+    item.addEventListener('change', (e: Event) => {
+      HSThemeAppearance.setAppearance((e.target as HTMLInputElement).checked ? 'dark' : 'default')
+    });
 
-            (item as HTMLInputElement).checked = HSThemeAppearance.getAppearance() === 'dark'
-        })
+    (item as HTMLInputElement).checked = HSThemeAppearance.getAppearance() === 'dark'
+  })
 
-        window.addEventListener('on-hs-appearance-change', (e: CustomEventInit) => {
-            switchableTheme.forEach((item: Element) => {
-                (<HTMLInputElement>item).checked = e.detail === 'dark'
-            });
-        })
-    })
+  window.addEventListener('on-hs-appearance-change', (e: CustomEventInit) => {
+    switchableTheme.forEach((item: Element) => {
+      (<HTMLInputElement>item).checked = e.detail === 'dark'
+    });
+  })
 })
 </script>
 

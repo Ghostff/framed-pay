@@ -1,12 +1,13 @@
-export class GatewayItem
-{
+export class GatewayItem {
     public id: string;
-    public name: string;
+    public route: { name: string, params: { id: string } };
+    public title: string;
     public icon: string;
 
-    public constructor(id: string, name: string, icon: string) {
+    public constructor(id: string, title: string, icon: string) {
         this.id = id;
-        this.name = name;
+        this.title = title;
+        this.route = {name: 'integrations-vendor', params: {id}};
         this.icon = icon;
     }
 }
