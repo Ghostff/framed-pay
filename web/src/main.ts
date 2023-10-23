@@ -6,6 +6,7 @@ import { library } from '@fortawesome/fontawesome-svg-core';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import icons from '@/fonts';
 
+import 'cooltipz-css' // custom tooltip
 import '@/assets/css/app.scss';
 import 'preline';
 import { useAuthStore } from '@/stores/auth';

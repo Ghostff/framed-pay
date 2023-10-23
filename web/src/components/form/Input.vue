@@ -31,7 +31,8 @@
           :type="type === 'date' ? 'hidden' : type"
           :value="modelValue"
           :placeholder="placeholder || label"
-          class="py-3 px-4 block w-full border-gray-200 rounded-md text-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400"
+          :class="{ 'py-3 px-4': size === undefined, 'py-2 px-3': size === 'md' }"
+          class="block w-full border-gray-200 rounded-md text-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400"
           @input="emitAndValidate"
       >
       <div
@@ -65,79 +66,37 @@ const emit = defineEmits<{
   (e: 'update:modelValue', value: string): void
 }>()
 
-interface InputProps {
+interface Props {
   modelValue: unknown
-  type: string
-  label: string
-  name: string
-  id: string
-  required: boolean
-  error: string
-  minlength: string | number
-  maxlength: string | number
-  min?: string | number | Date
-  max?: string | number | Date
-  pattern: string
+  type?: string,
+  label?: string,
+  name?: string,
+  id?: string,
+  required?: boolean,
+  error?: string|null
+  minlength?: string|number,
+  maxlength?: string|number,
+  min?: string|number|Date,
+  max?: string|number|Date,
+  startDate?: string|Date,
+  pattern?: string,
+  hidden?: boolean,
+  placeholder?: string,
+  size?: string,
 }
 
-const props = defineProps({
-  modelValue: {
-    required: true
-  },
-  type: {
-    type: String,
-    default: 'text'
-  },
-  label: {
-    type: String,
-    default: null
-  },
-  name: {
-    type: String,
-    default: null
-  },
-  id: {
-    type: String,
-    default: () => 'input-' + uuid()
-  },
-  required: {
-    type: Boolean
-  },
-  error: {
-    type: String,
-    default: null
-  },
-  minlength: {
-    type: [Number, String]
-  },
-  maxlength: {
-    type: [Number, String]
-  },
-  min: {
-    type: [Number, String, Date]
-  },
-  max: {
-    type: [Number, String, Date]
-  },
-  startDate: {
-    type: [Date, String]
-  },
-  pattern: {
-    type: String
-  },
-  hidden: {
-    type: Boolean
-  },
-  placeholder: {
-    type: String
-  }
+const props = withDefaults(defineProps<Props>(), {
+  type: 'text',
+  label: '',
+  id: 'input-' + uuid(),
+  error: null,
 })
 
 // input is validated if any of the bellow attributes are specified.
 const isValidatable = computed(() => {
   const validationKeys = ['required', 'minlength', 'maxlength', 'min', 'max', 'pattern']
   for (const property in props) {
-    if (validationKeys.includes(property) && props[property as keyof InputProps]) {
+    if (validationKeys.includes(property) && props[property as keyof Props]) {
       return true
     }
   }

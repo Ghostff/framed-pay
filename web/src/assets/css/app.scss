@@ -7,3 +7,16 @@ body {
   font-family: 'Nunito', sans-serif !important;
   //font-family: 'Roboto Mono', monospace !important;
 }
+
+:root {
+  --cooltipz-bg-color: #111827 !important;
+  --cooltipz-border-color: #111827 !important;
+  --cooltipz-font-family: 'Inter', 'Nunito', 'sans-serif' !important;
+  --cooltipz-border-radius: 0.4rem !important;
+}
+
+[aria-label][class*='cooltipz']:after,
+[aria-label][data-cooltipz-dir]:after {
+  font-weight: 500 !important;
+  padding: 0.2em 1em !important;
+}
