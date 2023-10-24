@@ -1,9 +1,9 @@
 use actix_web::{web::Data};
 use chrono::{DateTime, Utc, Duration};
-use sqlx::PgPool;
+use sqlx::{Error as SqlxError, PgPool};
 use uuid::Uuid;
 
-use crate::{models::user_model::{User}, repositories as repo };
+use crate::{models::user_model::{User}, repositories as repo, services};
 use crate::errors::{AuthenticationError, DatabaseError};
 use crate::models::user_model::{VerifyPasswordResetTokenSchema};
 
@@ -39,4 +39,17 @@ pub async fn get_user_by_token(conn: &Data<PgPool>, payload: &VerifyPasswordRese
     }
 
     Ok(user)
+}
+
+pub async fn generate_api_key(conn: &PgPool) -> Result<String, SqlxError> {
+    let mut api_key;
+    loop {
+        api_key = services::str::get_random(100);
+        match repo::user_repository::api_key_exist(&conn, &api_key).await {
+            Err(e) => return Err(e),
+            Ok(r) => if r == false {
+                return Ok(api_key);
+            },
+        };
+    }
 }

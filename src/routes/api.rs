@@ -16,6 +16,8 @@ pub fn init(cfg: &mut web::ServiceConfig) {
         .service(
             web::scope("")
                 .route("user", web::get().to(controllers::user_controller::me))
+                .route("dev-tools", web::get().to(controllers::user_controller::get_dev_tools))
+                .route("user/generate-api-key", web::put().to(controllers::user_controller::generate_new_api_key))
                 .default_service(web::to(controllers::home_controller::page_not_found))
         )
         .default_service(web::to(controllers::home_controller::page_not_found));

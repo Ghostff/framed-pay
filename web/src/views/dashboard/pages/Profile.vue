@@ -15,7 +15,8 @@
             <template v-for="(tab, i) in tabs" :key="tab.title">
               <button
                   type="button"
-                  class="hs-tab-active:bg-white hs-tab-active:shadow-md hs-tab-active:hover:border-transparent text-left hover:bg-gray-200 p-4 md:p-5 rounded-xl dark:hs-tab-active:bg-slate-900 dark:hover:bg-gray-700 active"
+                  class="hs-tab-active:bg-white hs-tab-active:shadow-md hs-tab-active:hover:border-transparent text-left hover:bg-gray-200 p-4 md:p-5 rounded-xl dark:hs-tab-active:bg-slate-900 dark:hover:bg-gray-700"
+                  :class="{'active': i === 0}"
                   :id="`tabs-with-card-item-${i}`"
                   :data-hs-tab="`#${tab.id}`"
                   :aria-controls="tab.id"
@@ -47,6 +48,7 @@
                   :key="tab.title"
                   :id="tab.id"
                   role="tabpanel"
+                  :class="{'hidden': i !== 0 }"
                   :aria-labelledby="`tabs-with-card-item-${i}`"
               >
                 <component :is="tab.component" :title="tab.title" :description="tab.desc" />

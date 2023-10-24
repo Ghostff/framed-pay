@@ -34,17 +34,10 @@ pub async fn register(body: Json<RegisterUserSchema>, conn: Data<PgPool>) -> imp
         return JsonResponse::new().status(SC::CONFLICT).error(&conflict_msg);
     }
 
-
-    let mut api_key;
-    loop {
-        api_key = services::str::get_random(100);
-        match repo::user_repository::api_key_exist(&conn, &api_key).await {
-            Err(e) => return JsonResponse::fetal(e),
-            Ok(r) => if r == false {
-                break;
-            },
-        };
-    }
+    let api_key = match services::user::generate_api_key(&conn).await {
+        Err(e) => return JsonResponse::fetal(e),
+        Ok(r) => r,
+    };
 
     let password = services::str::hash(&body.password);
     let user = match repo::user_repository::create(

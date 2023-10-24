@@ -7,9 +7,11 @@ import {
     faCreditCard,
     faLaptopCode,
     faCopy,
+    faX,
 } from '@fortawesome/free-solid-svg-icons';
 
 export default [
+    faX,
     faCopy,
     faLaptopCode,
     faCreditCard,

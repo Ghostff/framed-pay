@@ -22,9 +22,9 @@
     <!-- End Grid -->
 
     <div class="mt-5 sm:mt-10">
-      <div class="flex justify-between items-center">
+      <div class="flex justify-between items-center mb-2">
         <h4 class="text-xs font-semibold uppercase text-gray-800 dark:text-gray-200 mb-2">API KEY</h4>
-        <Button :tooltip="tooltip" size="sm" is="transparent" @click="copyKey">
+        <Button :tooltip="tooltip" size="sm" is="white" @click="copyKey">
           <font-awesome-icon icon="copy" />
         </Button>
       </div>
@@ -33,12 +33,17 @@
         {{ apiKey }}
       </div>
     </div>
+
+    <div class="mt-5 flex justify-end gap-x-2">
+      <Button :loading="isBusy" size="md" @click="generateNewKey">Generate new API key</Button>
+    </div>
   </div>
 </template>
 <script setup lang="ts">
 import Button from "@/components/form/Button.vue";
 import {ref, Ref} from "vue";
 import axios from "axios";
+import dialog from "@/utilities/dialog";
 
 defineProps<{
   title: string,
@@ -47,10 +52,29 @@ defineProps<{
 
 const tooltip: Ref<string> = ref('copy api key');
 const apiKey: Ref<string> = ref('')
+const isBusy: Ref<boolean> = ref(false)
 
 axios.get('dev-tools').then(({data}: {data: {data: { api_key: string }}}) => {
   apiKey.value = data.data.api_key
 });
+
+function generateNewKey() {
+  // isBusy.value = true;
+  dialog({
+    title: 'Regenerate API Key',
+    type: 'danger',
+    body: `You are about to regenerate the API key. This process will immediately invalidate your current key,
+          and any applications, services, or systems using the old key will no longer be able to access this service.
+          This action is irreversible.`,
+    onOk: () => {
+      axios.put('user/generate-api-key')
+          .finally(() => isBusy.value = false)
+          .then(({data}: {data: {data: { api_key: string }}}) => {
+            apiKey.value = data.data.api_key;
+          });
+    }
+  });
+}
 
 function copyKey() {
   navigator.clipboard.writeText(apiKey.value).then(() => {
