@@ -1,8 +1,7 @@
 pub mod email;
-pub mod str;
 pub mod queue;
-pub mod user;
+pub mod user_service;
 pub mod json_response;
-pub mod templates;
 pub mod cookie;
-pub mod job;
+pub mod job_service;
+pub mod api_key_service;

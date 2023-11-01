@@ -33,3 +33,4 @@ mime = "0.3.17"
 tera =  "1.19.1"
 actix-extensible-rate-limit = { version = "0.2.1", features = ["dashmap"]}
 tokio = { version = "1.33.0", features = ["full"] }
+regex = "1.10.2"

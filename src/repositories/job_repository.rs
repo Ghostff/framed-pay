@@ -1,7 +1,7 @@
 use sqlx::{PgPool};
 use sqlx::types::JsonValue;
 use crate::errors::DatabaseError;
-use crate::models::job_model::Job;
+use crate::models::job::Job;
 use crate::repositories::handle_error;
 
 pub async fn create(

@@ -8,9 +8,11 @@ import {
     faLaptopCode,
     faCopy,
     faX,
+    faTrashCan,
 } from '@fortawesome/free-solid-svg-icons';
 
 export default [
+    faTrashCan,
     faX,
     faCopy,
     faLaptopCode,

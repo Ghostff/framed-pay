@@ -1,4 +1,5 @@
-pub mod jwt_model;
-pub mod user_model;
+pub mod jwt;
+pub mod user;
 pub mod transaction;
-pub mod job_model;
+pub mod job;
+pub mod api_key;

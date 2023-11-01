@@ -13,7 +13,7 @@ use sqlx::{Pool, Postgres};
 use tokio::sync::mpsc;
 use tokio::sync::mpsc::Receiver;
 use crate::config::{ENV};
-use crate::services::job::Job;
+use crate::services::job_service::Job;
 
 mod controllers;
 mod models;
@@ -23,6 +23,7 @@ mod routes;
 mod repositories;
 mod services;
 mod errors;
+mod utilities;
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {

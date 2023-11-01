@@ -1,36 +1,24 @@
 use actix_web::{ HttpRequest, Responder };
 use actix_web::web::Data;
 use serde_json::json;
-use sqlx::PgPool;
+use sqlx::{PgPool};
 
-use crate::models::user_model::User;
-use crate::{
-    repositories,
-    services,
-    services::json_response::JsonResponse
-};
+use crate::models::user::User;
+use crate::{repositories, services::json_response::JsonResponse};
+use crate::models::api_key::{ApiKey, FilteredApiKey};
 
 pub async fn me(_: HttpRequest, user: User) -> impl Responder {
     JsonResponse::new().ok(user.get_filtered())
 }
 
-pub async fn generate_new_api_key(_: HttpRequest, mut user: User, conn: Data<PgPool>) -> impl Responder {
-    user.api_key = match services::user::generate_api_key(&conn).await {
+pub async fn get_dev_tools(_: HttpRequest, conn: Data<PgPool>, user: User) -> impl Responder {
+
+    let api_keys = match repositories::api_key_repository::find_by_user_id(&conn, &user.id).await {
+        Ok(keys) => keys.iter().map(|api_key: &ApiKey| api_key.get_filtered()).collect::<Vec<FilteredApiKey>>(),
         Err(e) => return JsonResponse::fetal(e),
-        Ok(r) => r,
     };
 
-    match repositories::user_repository::update(&conn, &user).await {
-        Err(e) => JsonResponse::fetal(e),
-        Ok(_) => JsonResponse::new().ok(json!({ "api_key": user.api_key}))
-    }
-}
-
-pub async fn get_dev_tools(_: HttpRequest, user: User) -> impl Responder {
     JsonResponse::new().ok(json!({
-        "api_key": user.api_key
+        "api_keys": api_keys
     }))
 }
-
-// make auth guard
-// fix password reset

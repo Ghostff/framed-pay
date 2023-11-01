@@ -8,19 +8,10 @@ use chrono::{ Utc, Duration };
 use jsonwebtoken::{encode, EncodingKey, Header};
 use sqlx::{PgPool};
 
-use crate::{
-    models::jwt_model::TokenClaims,
-    services::json_response::JsonResponse,
-    models::user_model::{LoginUserSchema, RegisterUserSchema, User},
-    repositories as repo,
-    services::email::Email,
-    services::cookie::{AccessTokenCookie, Cookie},
-    services::job::Job,
-    services
-};
+use crate::{models::jwt::TokenClaims, services::json_response::JsonResponse, models::user::{LoginUserSchema, RegisterUserSchema, User}, repositories as repo, services::email::Email, services::cookie::{AccessTokenCookie, Cookie}, services::job_service::Job, services, utilities};
 use crate::config::{ENV};
 use crate::errors::DatabaseError;
-use crate::models::user_model::{PasswordChangeSchema, ResetUserPasswordSchema, VerifyPasswordResetTokenSchema};
+use crate::models::user::{PasswordChangeSchema, ResetUserPasswordSchema, VerifyPasswordResetTokenSchema};
 
 pub async fn register(body: Json<RegisterUserSchema>, conn: Data<PgPool>) -> impl Responder {
     let email = body.email.to_lowercase();
@@ -34,24 +25,23 @@ pub async fn register(body: Json<RegisterUserSchema>, conn: Data<PgPool>) -> imp
         return JsonResponse::new().status(SC::CONFLICT).error(&conflict_msg);
     }
 
-    let api_key = match services::user::generate_api_key(&conn).await {
-        Err(e) => return JsonResponse::fetal(e),
-        Ok(r) => r,
-    };
-
-    let password = services::str::hash(&body.password);
+    let password = utilities::str::hash(&body.password);
     let user = match repo::user_repository::create(
         &conn,
         &body.first_name,
         &body.last_name,
         &email,
         &password,
-        &api_key,
     ).await {
         Err(DatabaseError::DuplicateRecord(_)) => return JsonResponse::new().status(SC::CONFLICT).error(conflict_msg),
         Err(error) => return JsonResponse::fetal(error),
         Ok(u) => u,
     };
+
+    match services::user_service::attach_api_key(&conn, &user, "Default").await {
+        Err(e) => return JsonResponse::fetal(e),
+        Ok(_) => {}
+    }
 
      JsonResponse::new()
          .cookie(AccessTokenCookie::set(create_jwt_token(&user).as_ref()))
@@ -93,10 +83,10 @@ pub async fn password_reset(body: Json<ResetUserPasswordSchema>, conn: Data<PgPo
         Ok(u) => u
     };
 
-    let reset_token = services::str::get_random(200);
+    let reset_token = utilities::str::get_random(200);
     let url = format!("{}/password-reset/{reset_token}/{}", ENV.app_url, user.id);
 
-    let mut template = services::templates::Template::new("emails/password_reset.html")
+    let mut template = utilities::templates::Template::new("emails/password_reset.html")
         .add("name", &user.last_name)
         .add("url", &url);
 
@@ -115,7 +105,7 @@ pub async fn password_reset(body: Json<ResetUserPasswordSchema>, conn: Data<PgPo
 }
 
 pub async fn verify_password_reset_token(body: Json<VerifyPasswordResetTokenSchema>, conn: Data<PgPool>) -> impl Responder {
-    match services::user::get_user_by_token(&conn, &body).await {
+    match services::user_service::get_user_by_token(&conn, &body).await {
         Ok(_) => JsonResponse::success(),
         Err(_) => JsonResponse::new().status(SC::UNAUTHORIZED).error("Invalid or expired token.")
     }
@@ -127,13 +117,13 @@ pub async fn change_password(body: Json<PasswordChangeSchema>, conn: Data<PgPool
         uid: body.uid.clone(),
     };
 
-    let mut user = match services::user::get_user_by_token(&conn, &token).await {
+    let mut user = match services::user_service::get_user_by_token(&conn, &token).await {
         Ok(u) => u,
         Err(_) => return JsonResponse::new().status(SC::UNAUTHORIZED).error("Invalid or expired token."),
     };
 
     user.password_reset_token = None;
-    user.password = services::str::hash(&body.password);
+    user.password = utilities::str::hash(&body.password);
 
     if let Err(e) = repo::user_repository::update(&conn, &user).await {
         return JsonResponse::fetal(e)

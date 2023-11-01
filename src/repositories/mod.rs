@@ -4,6 +4,7 @@ use crate::errors::DatabaseError::{RecordNotFound, DuplicateRecord, Every};
 
 pub mod user_repository;
 pub mod job_repository;
+pub mod api_key_repository;
 
 pub fn handle_error(error: Error) -> DatabaseError {
     return match error {

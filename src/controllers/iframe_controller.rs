@@ -1,6 +1,6 @@
 use actix_web::{http, HttpResponse, Responder, web, web::Data};
 use sqlx::PgPool;
-use crate::{repositories as repo, services};
+use crate::{utilities};
 use crate::models::transaction::Transaction;
 use crate::services::json_response::JsonResponse;
 
@@ -51,7 +51,7 @@ pub async fn load(query_params: web::Query<QueryParams>, conn: Data<PgPool>) -> 
         error = &error_msg;
     }
 
-    let mut tpl = services::templates::Template::new("views/iframe/loader.html")
+    let mut tpl = utilities::templates::Template::new("views/iframe/loader.html")
         .add("error", &error.as_deref().unwrap_or(""))
         .add("accepts", &payment_methods)
         .add("collect_address", &query_params.collect_address.unwrap_or(false))

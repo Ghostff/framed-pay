@@ -117,6 +117,12 @@ function toggle(show: boolean): void {
         HSOverlay.close(modal.value);
     }
 }
+
+defineExpose({
+  open: () => toggle(true),
+  close: () => toggle(false),
+  toggle: (flag: boolean) => toggle(flag),
+});
 </script>
 
 <style scoped>

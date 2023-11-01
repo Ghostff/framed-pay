@@ -5,7 +5,7 @@ use lettre::transport::smtp::authentication::Credentials;
 use lettre::transport::smtp::Error;
 use log::{info};
 use crate::config::ENV;
-use crate::services::job::Queueable;
+use crate::services::job_service::Queueable;
 
 #[derive(Debug, Clone, serde::Deserialize, serde::Serialize)]
 pub struct Email {
@@ -24,7 +24,7 @@ impl Email {
     fn new (to: String, subject: &str, message: String) -> Self {
         Self {
             subject: subject.to_string(),
-            from: "noreply@framedpay.com".to_string(),
+            from: format!("noreply@{}", ENV.app_domain),
             message: message.to_string(),
             to: vec![to],
         }

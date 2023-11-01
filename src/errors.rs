@@ -19,6 +19,10 @@ pub enum DatabaseError {
     InvalidUuid,
     #[error("No record found")]
     RecordNotFound,
+    #[error("Record could not be created")]
+    FailedToInsert,
+    #[error("Record could not be delete")]
+    FailedToDelete,
     #[error("Duplicate data error: {0}")]
     DuplicateRecord(sqlx::Error),
     #[error("Database error: {0}")]
