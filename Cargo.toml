@@ -23,7 +23,7 @@ actix-web-validator = "5.0.1"
 derive_more = "0.99.17"
 futures-util = "0.3.28"
 lazy_static = "1.4.0"
-reqwest = "0.11.20"
+reqwest = { version = "0.11", features = ["json"] }
 rand = "0.8.5"
 log = "0.4.20"
 lettre = { version =  "0.10.4", features = ["tokio1-native-tls"] }

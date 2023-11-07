@@ -43,7 +43,7 @@
       <Separator>Or</Separator>
 
       <!-- Form -->
-      <Form ref="formElement" @submit="submit">
+      <Form ref="formElement" @submit="submit" @honey-pot="v => formData.confirm_email = v">
         <div class="grid gap-y-4">
           <Input v-model="formData.email" required label="Email address" type="email" minlength="4" maxlength="255" />
           <div>
@@ -80,6 +80,7 @@ import { ref, Ref } from 'vue';
 import axios from 'axios';
 import { UserInterface } from '@/models/user';
 import { useAuthStore } from '@/stores/auth';
+import {recaptchaRequest} from "@/utilities/request";
 
 defineEmits<{
   (e: 'toggle', value: string): void;
@@ -89,6 +90,7 @@ const isProcessing: Ref = ref<boolean>(false);
 const formElement: Ref<HTMLFormElement | null> = ref(null);
 const formData = resettableReactive({
   email: 'frankchris@hotmail.com',
+  confirm_email: '',
   password: 'p@ssw0rd!',
   remember_me: ''
 });
@@ -96,8 +98,7 @@ const formData = resettableReactive({
 function submit(): void {
   isProcessing.value = true;
 
-  axios
-    .post('/login', formData)
+  recaptchaRequest({ uri: '/login', data: formData })
     .finally(() => (isProcessing.value = false))
     .then(({ data }: { data: { data: UserInterface } }) => useAuthStore().login(data.data))
     .catch((error) => {

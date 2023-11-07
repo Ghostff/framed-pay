@@ -43,7 +43,7 @@
       <Separator>Or</Separator>
 
       <!-- Form -->
-      <Form ref="formElement" @submit="submit">
+      <Form ref="formElement" @submit="submit" @honey-pot="v => formData.confirm_email = v">
         <div class="grid gap-y-4">
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 lg:gap-4">
             <div>
@@ -77,6 +77,7 @@
             minlength="4"
             maxlength="255"
           />
+
           <Input
             v-model="formData.password"
             required
@@ -86,6 +87,7 @@
             minlength="6"
             maxlength="255"
           />
+
           <Checkbox v-model="formData.remember_me" required>
             I accept the
             <Link name="login">Terms and Conditions</Link>
@@ -111,6 +113,7 @@ import type { Ref } from 'vue';
 import { ref } from 'vue';
 import { UserInterface } from '@/models/user';
 import { useAuthStore } from '@/stores/auth';
+import {recaptchaRequest} from "@/utilities/request";
 
 defineEmits<{
   (e: 'toggle', value: string): void;
@@ -122,24 +125,27 @@ const formData = resettableReactive({
   first_name: 'Chrys',
   last_name: 'Ugwu',
   email: 'frankchris@hotmail.com',
+  confirm_email: '',
   password: 'p@ssw0rd!',
   remember_me: true
 });
 
 function submit(): void {
   isProcessing.value = true;
-  axios
-    .post('/register', formData)
-    .finally(() => (isProcessing.value = false))
-    .then(({ data }: { data: { data: UserInterface } }) => useAuthStore().login(data.data))
-    .catch((error) => {
-      if (error.response) {
-        formElement.value?.setErrors(error.response.data);
-        return;
-      }
+  recaptchaRequest({ uri: '/register', data: formData })
+      .finally(() => (isProcessing.value = false))
+      .then(({ data }: { data: { data: UserInterface } }) => useAuthStore().login(data.data))
+      .catch((error) => {
+        if (error.response) {
+          formElement.value?.setErrors(error.response.data);
+          return;
+        }
 
-      console.error(error);
-    });
+        console.error(error);
+      });
+
+
+
 }
 </script>
 

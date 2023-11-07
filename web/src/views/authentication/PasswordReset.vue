@@ -33,7 +33,7 @@
               Invalid or expired token
             </div>
             <div v-else class="mt-5">
-                <Form ref="formElement" @submit="submit">
+                <Form ref="formElement" @submit="submit" @honey-pot="v => formData.confirm_email = v">
                     <div class="grid gap-y-4">
                       <Input
                           v-model="formData.password"
@@ -75,6 +75,7 @@ import FontCheck2 from "@/components/icons/IconCheck2.vue";
 import axios from "axios";
 import {useRoute, useRouter} from "vue-router";
 import Loading from "@/views/Loading.vue";
+import {recaptchaRequest} from "@/utilities/request";
 
 defineEmits<{
     (e: 'toggle', value: string): void
@@ -86,6 +87,7 @@ const formElement: Ref<HTMLFormElement | null> = ref(null);
 const isValid: Ref<boolean|null> = ref(null);
 const success: Ref<boolean> = ref(false);
 const formData = reactive({
+  confirm_email: '',
   password: '',
   repeat_password: ''
 });
@@ -93,7 +95,7 @@ const formData = reactive({
 
 axios.post('verify-password-reset-token', route.query).then(() => isValid.value = true).catch(() => isValid.value = false)
 
-function submit(e): void  {
+function submit(e: Event): boolean  {
   if (formData.password !== formData.repeat_password) {
     formElement.value.setErrors({errors: {password_repeat: ['Does not match "New Password"']}, error: 'Passwords do not match'});
     e.preventDefault();
@@ -101,16 +103,18 @@ function submit(e): void  {
   }
 
   isProcessing.value = true;
-  axios.put("change-password", Object.assign({}, formData, route.query))
+  recaptchaRequest({ method:'PUT', uri: '/change-password', data: Object.assign({}, formData, route.query) })
       .finally(() => isProcessing.value = false)
       .then(() => success.value = true)
-      .catch(() => {
+      .catch((error) => {
         if (error.response) {
           formElement.value?.setErrors(error.response.data);
           return;
         }
         console.error(error);
       });
+
+  return true;
 }
 </script>
 

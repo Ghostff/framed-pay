@@ -50,7 +50,7 @@ app.component('font-awesome-icon', FontAwesomeIcon);
 
 axios
   .get('user')
-  .then(({ data }: { data: { data: UserInterface } }) => useAuthStore().login(data.data))
+  .then(({ data }: { data: { data: UserInterface } }) => useAuthStore().login(data.data, false))
   .finally(() => app.use(router).mount('#app'))
   .catch((error) => {
     if (error.response && error.response.status === 401 && error.response.data.message === 'Unauthenticated') {

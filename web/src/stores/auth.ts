@@ -19,10 +19,14 @@ export const useAuthStore = defineStore('auth', {
     setUser(userData: UserInterface | null): void {
       this.user = userData;
     },
-    async login(userData: UserInterface): Promise<void> {
+    async login(userData: UserInterface, isIndeterminate = true): Promise<void> {
       if (typeof userData === 'object' && userData !== null) {
         this.setUser(userData);
-        await router.push({ name: 'dashboard' });
+        if (isIndeterminate) {
+          location.reload();
+        } else {
+          await router.push({ name: 'dashboard' });
+        }
       }
     },
     async logout(): Promise<void> {

@@ -29,6 +29,9 @@ pub struct RegisterUserSchema {
     pub email: String,
     #[validate(length(min = 6, message = "Password must be greater than 8 characters"))]
     pub password: String,
+    // bot variables
+    pub confirm_email: String,
+    pub recaptcha_token: String,
 }
 
 #[derive(Debug, Deserialize, Validate)]
@@ -38,6 +41,9 @@ pub struct LoginUserSchema {
     pub email: String,
     #[validate(length(min = 6, message = "Password must be greater than 8 characters"))]
     pub password: String,
+    // bot variables
+    pub confirm_email: String,
+    pub recaptcha_token: String,
 }
 
 #[derive(Debug, Deserialize, Validate)]
@@ -45,6 +51,9 @@ pub struct ResetUserPasswordSchema {
     #[validate(length(min = 4, max = 250, message = "Email must be between 4 to 250"))]
     #[validate(email(code = "code_str", message = "Invalid email address"))]
     pub email: String,
+    // bot variables
+    pub confirm_email: String,
+    pub recaptcha_token: String,
 }
 
 #[derive(Debug, Deserialize, Validate)]
@@ -63,6 +72,9 @@ pub struct PasswordChangeSchema {
     pub uid: String,
     #[validate(length(min = 6, message = "Password must be greater than 8 characters"))]
     pub password: String,
+    // bot variables
+    pub confirm_email: String,
+    pub recaptcha_token: String,
 }
 
 #[derive(Debug, Serialize)]
@@ -77,6 +89,10 @@ pub struct FilteredUser {
     pub updated_at: DateTime<Utc>,
 }
 
+pub trait BotTrapField {
+    fn honeypot_value(&self) -> &str;
+}
+
 impl User {
     pub fn get_filtered(&self) -> FilteredUser {
         FilteredUser {
@@ -89,5 +105,29 @@ impl User {
             created_at: self.created_at.unwrap(),
             updated_at: self.updated_at.unwrap(),
         }
+    }
+}
+
+impl BotTrapField for RegisterUserSchema {
+    fn honeypot_value(&self) -> &str {
+        &self.confirm_email
+    }
+}
+
+impl BotTrapField for LoginUserSchema {
+    fn honeypot_value(&self) -> &str {
+        &self.confirm_email
+    }
+}
+
+impl BotTrapField for ResetUserPasswordSchema {
+    fn honeypot_value(&self) -> &str {
+        &self.confirm_email
+    }
+}
+
+impl BotTrapField for PasswordChangeSchema {
+    fn honeypot_value(&self) -> &str {
+        &self.confirm_email
     }
 }

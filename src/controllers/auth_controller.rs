@@ -8,12 +8,24 @@ use chrono::{ Utc, Duration };
 use jsonwebtoken::{encode, EncodingKey, Header};
 use sqlx::{PgPool};
 
-use crate::{models::jwt::TokenClaims, services::json_response::JsonResponse, models::user::{LoginUserSchema, RegisterUserSchema, User}, repositories as repo, services::email::Email, services::cookie::{AccessTokenCookie, Cookie}, services::job_service::Job, services, utilities};
+use crate::{
+    models::jwt::TokenClaims,
+    services::json_response::JsonResponse,
+    models::user::{LoginUserSchema, RegisterUserSchema, User},
+    repositories as repo,
+    services::email::Email,
+    services::cookie::{AccessTokenCookie, Cookie},
+    services::job_service::Job,
+    services,
+    utilities,
+    check_bot
+};
 use crate::config::{ENV};
 use crate::errors::DatabaseError;
 use crate::models::user::{PasswordChangeSchema, ResetUserPasswordSchema, VerifyPasswordResetTokenSchema};
 
 pub async fn register(body: Json<RegisterUserSchema>, conn: Data<PgPool>) -> impl Responder {
+    check_bot!(&body.confirm_email, &body.recaptcha_token);
     let email = body.email.to_lowercase();
     let conflict_msg = "A user with email already exist in our system";
     let exist = match repo::user_repository::email_exist(&conn, &email).await {
@@ -49,6 +61,7 @@ pub async fn register(body: Json<RegisterUserSchema>, conn: Data<PgPool>) -> imp
 }
 
 pub async fn login(body: Json<LoginUserSchema>, conn: Data<PgPool>) -> impl Responder {
+    check_bot!(&body.confirm_email, &body.recaptcha_token);
     let email = body.email.to_lowercase();
     let mut user  = match repo::user_repository::find_by_email(&conn, &email).await {
         Err(DatabaseError::RecordNotFound) => return JsonResponse::unauthorized("Invalid email or password"),

@@ -20,6 +20,9 @@ pub struct Config {
     pub mail_username: String,
     pub mail_password: String,
 
+    pub google_api_key: String,
+    pub google_recaptcha_key: String,
+
     pub jobs_channel_buffer_size: usize,
     pub max_concurrent_email_job_task: usize,
 }
@@ -45,6 +48,8 @@ lazy_static! {
             mail_username: env::var("MAIL_USERNAME").expect("MAIL_USERNAME must be set"),
             mail_port: mail_port.parse::<u16>().unwrap(),
             mail_password: env::var("MAIL_PASSWORD").expect("MAIL_PASSWORD must be set"),
+            google_api_key: env::var("GOOGLE_API_KEY").expect("GOOGLE_API_KEY must be set"),
+            google_recaptcha_key: env::var("GOOGLE_RECAPTCHA_KEY").expect("GOOGLE_RECAPTCHA_KEY must be set"),
             jobs_channel_buffer_size: jobs_channel_buffer_size.parse::<usize>().unwrap(),
             max_concurrent_email_job_task: max_concurrent_email_job_task.parse::<usize>().unwrap(),
         }
