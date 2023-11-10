@@ -9,6 +9,7 @@ import {
     faCopy,
     faX,
     faTrashCan,
+    faChevronDown,
 } from '@fortawesome/free-solid-svg-icons';
 
 export default [
@@ -21,7 +22,8 @@ export default [
     faAngleDown,
     faArrowRightFromBracket,
     faUser,
-    faExclamationCircle
+    faExclamationCircle,
+    faChevronDown,
     /* faDownload,
        faMagnifyingGlassLocation,
        faNoteSticky,

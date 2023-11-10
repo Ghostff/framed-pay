@@ -92,7 +92,7 @@
             I accept the
             <Link name="login">Terms and Conditions</Link>
           </Checkbox>
-          <Button :loading="isProcessing" type="submit">Sign up</Button>
+          <Button :is-loading="isProcessing" type="submit">Sign up</Button>
         </div>
       </Form>
       <!-- End Form -->
@@ -107,7 +107,7 @@ import Form from '@/components/form/Form.vue';
 import Input from '@/components/form/Input.vue';
 import Checkbox from '@/components/form/Checkbox.vue';
 import Button from '@/components/form/Button.vue';
-import { resettableReactive } from '@/utility';
+import { resettableReactive } from '@/utilities/utility';
 import axios from 'axios';
 import type { Ref } from 'vue';
 import { ref } from 'vue';

@@ -8,6 +8,7 @@ pub struct User {
     pub first_name: String,
     pub last_name: String,
     pub email: String,
+    pub phone: Option<String>,
     pub avatar: String,
     pub password: String,
     pub password_reset_token: Option<String>,
@@ -83,6 +84,7 @@ pub struct FilteredUser {
     pub first_name: String,
     pub last_name: String,
     pub email: String,
+    pub phone: Option<String>,
     pub role: String,
     pub avatar: String,
     pub created_at: DateTime<Utc>,
@@ -97,11 +99,12 @@ impl User {
     pub fn get_filtered(&self) -> FilteredUser {
         FilteredUser {
             id: self.id.to_string(),
-            email: self.email.to_owned(),
-            first_name: self.first_name.to_owned(),
-            last_name: self.last_name.to_owned(),
-            avatar: self.avatar.to_owned(),
-            role: self.role.to_owned(),
+            email: self.email.clone(),
+            phone: self.phone.clone(),
+            first_name: self.first_name.clone(),
+            last_name: self.last_name.clone(),
+            avatar: self.avatar.clone(),
+            role: self.role.clone(),
             created_at: self.created_at.unwrap(),
             updated_at: self.updated_at.unwrap(),
         }

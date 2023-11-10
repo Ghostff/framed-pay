@@ -31,8 +31,12 @@
           :type="type === 'date' ? 'hidden' : type"
           :value="modelValue"
           :placeholder="placeholder || label"
-          :class="{ 'py-3 px-4': size === undefined, 'py-2 px-3': size === 'md' }"
-          class="block w-full border-gray-200 rounded-md text-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400"
+          :class="{
+            'py-3 px-4': size === undefined,
+            'py-2 px-3': size === 'md',
+            'block w-full border-gray-200 rounded-md text-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400': true,
+            [classes]: true,
+          }"
           @input="emitAndValidate"
       >
       <div
@@ -61,6 +65,7 @@ import {computed, type Ref, ref} from 'vue'
 import {type ValidatableInput, Validator} from '@/utilities/validator'
 import dateFormat from 'dateformat'
 import Label from '@/components/form/Label.vue'
+import {formatPhoneNumber} from "@/utilities/utility";
 
 const emit = defineEmits<{
   (e: 'update:modelValue', value: string): void
@@ -82,12 +87,14 @@ interface Props {
   pattern?: string,
   hidden?: boolean,
   placeholder?: string,
+  classes?: string,
   size?: string,
 }
 
 const props = withDefaults(defineProps<Props>(), {
   type: 'text',
   label: '',
+  classes: '',
   id: 'input-' + uuid(),
   error: null,
 })
@@ -103,6 +110,7 @@ const isValidatable = computed(() => {
   return false
 })
 
+const isPhone              = props.type === 'tel';
 const validationError: Ref = ref<Ref>()
 const input: Ref           = ref<HTMLInputElement>()
 const inputError           = computed(() => validationError.value || props.error)
@@ -114,6 +122,10 @@ function setInputDate(date: Date): void {
 }
 
 function emitAndValidate(e: Event): void {
+  if (isPhone) {
+    e.target.value = formatPhoneNumber(e.target.value);
+  }
+
   emit('update:modelValue', (e.target as HTMLInputElement).value)
   if (isValidatable.value) {
     (e.target as ValidatableInput).validate()

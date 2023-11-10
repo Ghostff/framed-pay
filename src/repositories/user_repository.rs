@@ -53,13 +53,14 @@ pub async fn update(pool: &PgPool, user: &User) -> Result<u64, DatabaseError> {
     match sqlx::query!(
         r#"
         UPDATE users
-        SET first_name=$2, last_name=$3, email=$4, avatar=$5, password=$6, password_reset_token=$7, role=$8, last_logged_in_at=$9, updated_at = NOW()
+        SET first_name=$2, last_name=$3, email=$4, phone=$5, avatar=$6, password=$7, password_reset_token=$8, role=$9, last_logged_in_at=$10, updated_at = NOW()
         WHERE id = $1
         "#,
         &user.id,
         &user.first_name,
         &user.last_name,
         &user.email,
+        user.phone,
         &user.avatar,
         &user.password,
         user.password_reset_token,

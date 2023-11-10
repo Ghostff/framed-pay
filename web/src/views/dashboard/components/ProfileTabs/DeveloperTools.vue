@@ -51,7 +51,7 @@
       <div class="py-10 px-4">
         <Input v-model="name" required label="Name" type="text" minlength="2" maxlength="200" pattern="^[\w\- ]+$" />
         <div class="text-right pt-3">
-          <Button :disabled="name.length < 2" :loading="isBusy" size="md" @click.stop="generateNewKey">
+          <Button :disabled="name.length < 2" :is-loading="isBusy" size="md" @click.stop="generateNewKey">
             Create
           </Button>
         </div>

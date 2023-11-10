@@ -4,15 +4,22 @@ dev:
 dev-down:
 	docker-compose down
 
+watch:
+	cd web && \
+	ncu --upgrade && \
+	npm i && \
+	npm run dev
+
+
+start-server: dev
+	cargo watch -q -c -w src/ -x run
+
 migrate@create:
 	sqlx migrate add --source ./src/migrations -r $(name)
 migrate@up:
 	sqlx migrate run --source ./src/migrations
 migrate@down:
 	sqlx migrate revert --source ./src/migrations
-
-start-server:
-	cargo watch -q -c -w src/ -x run
 
 install:
 	apt-get install libpq-dev

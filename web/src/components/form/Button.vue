@@ -17,14 +17,14 @@
       'border-transparent text-gray-700 align-middle focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-white focus:ring-blue-600 dark:bg-gray-800 dark:text-gray-400 dark:hover:text-white': is === 'transparent',
       'text-gray-700 bg-white text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-offset-white focus:ring-blue-600 dark:bg-gray-800 dark:hover:bg-slate-800 dark:border-gray-700 dark:text-gray-400 dark:hover:text-white dark:focus:ring-offset-gray-800': is === 'white'
     }"
-      :disabled="loading"
+      :disabled="isLoading"
       :type="type"
       data-cooltipz-dir="top"
       :aria-label="tooltip"
       class="inline-flex justify-center items-center gap-2 border font-semibold focus:outline-none focus:ring-2 transition-all text-sm"
   >
     <span
-        v-show="loadable && loading"
+        v-show="isLoadable && isLoading"
         aria-label="loading"
         class="animate-spin inline-block w-4 h-4 border-[3px] border-white border-t-transparent rounded-full"
         role="status"
@@ -44,11 +44,11 @@ defineProps({
   tooltip: {
     type: String
   },
-  loadable: {
+  isLoadable: {
     type: Boolean,
     default: true
   },
-  loading: {
+  isLoading: {
     type: Boolean,
     default: false
   },

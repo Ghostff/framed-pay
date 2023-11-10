@@ -40,7 +40,7 @@
                 <Form ref="formElement" @submit="submit" @honey-pot="v => formData.confirm_email = v">
                     <div class="grid gap-y-4">
                         <Input v-model="formData.email" required label="Email address" type="email" minlength="4" maxlength="255"/>
-                        <Button :loading="isProcessing" type="submit">Reset password</Button>
+                        <Button :is-loading="isProcessing" type="submit">Reset password</Button>
                     </div>
                 </Form>
             </div>
@@ -54,7 +54,7 @@ import Input from "@/components/form/Input.vue";
 import Button from "@/components/form/Button.vue";
 import Form from "@/components/form/Form.vue";
 import FontCheck2 from "@/components/icons/IconCheck2.vue";
-import {resettableReactive} from "@/utility";
+import {resettableReactive} from "@/utilities/utility";
 import {UserInterface} from "@/models/user";
 import {useAuthStore} from "@/stores/auth";
 import axios from "axios";

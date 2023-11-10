@@ -6,6 +6,7 @@ CREATE TABLE "users"
     first_name           VARCHAR(255) NOT NULL,
     last_name            VARCHAR(255) NOT NULL,
     email                VARCHAR(255) NOT NULL UNIQUE,
+    phone                VARCHAR(20)  NULL,
     avatar               VARCHAR      NOT NULL             DEFAULT 'default.png',
     password             VARCHAR(255) NOT NULL,
     password_reset_token VARCHAR(255) NULL,

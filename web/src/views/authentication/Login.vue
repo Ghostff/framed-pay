@@ -61,7 +61,7 @@
           </div>
           <!-- End Form Group -->
           <Checkbox v-model="formData.remember_me" label="Remember me" />
-          <Button :loading="isProcessing" type="submit">Sign in</Button>
+          <Button :is-loading="isProcessing" type="submit">Sign in</Button>
         </div>
       </Form>
       <!-- End Form -->
@@ -75,7 +75,7 @@ import Checkbox from '@/components/form/Checkbox.vue';
 import Button from '@/components/form/Button.vue';
 import Form from '@/components/form/Form.vue';
 import Separator from '@/components/form/Separator.vue';
-import { resettableReactive } from '@/utility';
+import { resettableReactive } from '@/utilities/utility';
 import { ref, Ref } from 'vue';
 import axios from 'axios';
 import { UserInterface } from '@/models/user';

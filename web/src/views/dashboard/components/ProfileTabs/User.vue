@@ -5,7 +5,7 @@
       <p class="text-sm text-gray-600 dark:text-gray-400">{{ description }}</p>
     </div>
 
-    <form>
+    <Form ref="formElement" @submit="save" @honey-pot="v => formData.confirm_email = v">
       <!-- Grid -->
       <div class="grid sm:grid-cols-12 gap-2 sm:gap-6">
 
@@ -18,8 +18,8 @@
 
         <div class="sm:col-span-9">
           <div class="sm:flex">
-            <input id="af-account-full-name" type="text" class="py-2 px-3 pr-11 block w-full border-gray-200 shadow-sm -mt-px -ml-px first:rounded-t-lg last:rounded-b-lg sm:first:rounded-l-lg sm:mt-0 sm:first:ml-0 sm:first:rounded-tr-none sm:last:rounded-bl-none sm:last:rounded-r-lg text-sm relative focus:z-10 focus:border-blue-500 focus:ring-blue-500 dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400" placeholder="Maria">
-            <input type="text" class="py-2 px-3 pr-11 block w-full border-gray-200 shadow-sm -mt-px -ml-px first:rounded-t-lg last:rounded-b-lg sm:first:rounded-l-lg sm:mt-0 sm:first:ml-0 sm:first:rounded-tr-none sm:last:rounded-bl-none sm:last:rounded-r-lg text-sm relative focus:z-10 focus:border-blue-500 focus:ring-blue-500 dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400" placeholder="Boone">
+            <Input v-model="formData.first_name" maxlength="255" required classes="rounded-tr-none rounded-br-none" size="md" />
+            <Input v-model="formData.last_name" maxlength="255" required classes="rounded-tl-none rounded-bl-none -ml-px" size="md" />
           </div>
         </div>
         <!-- End Col -->
@@ -32,7 +32,7 @@
         <!-- End Col -->
 
         <div class="sm:col-span-9">
-          <input id="af-account-email" type="email" class="py-2 px-3 pr-11 block w-full border-gray-200 shadow-sm text-sm rounded-lg focus:border-blue-500 focus:ring-blue-500 dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400" placeholder="maria@site.com">
+          <Input v-model="formData.email" required type="email" size="md" minlength="4" maxlength="255" />
         </div>
         <!-- End Col -->
 
@@ -41,12 +41,13 @@
             Password
           </label>
         </div>
+
         <!-- End Col -->
 
         <div class="sm:col-span-9">
           <div class="space-y-2">
-            <input id="af-account-password" type="text" class="py-2 px-3 pr-11 block w-full border-gray-200 shadow-sm rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400" placeholder="Enter current password">
-            <input type="text" class="py-2 px-3 pr-11 block w-full border-gray-200 shadow-sm rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400" placeholder="Enter new password">
+            <Input v-model="formData.current_password" minlength="6" maxlength="255" type="password" size="md" placeholder="Enter current password" />
+            <Input v-model="formData.new_password" minlength="6" maxlength="255" type="password" size="md" placeholder="Enter new password" />
           </div>
         </div>
         <!-- End Col -->
@@ -56,7 +57,7 @@
             <label for="af-account-phone" class="inline-block text-sm text-gray-800 mt-2.5 dark:text-gray-200">
               Phone
             </label>
-            <span class="text-sm text-gray-400 dark:text-gray-600">
+            <span class="text-xs text-gray-400 dark:text-gray-600">
               (Optional)
             </span>
           </div>
@@ -65,28 +66,55 @@
 
         <div class="sm:col-span-9">
           <div class="sm:flex">
-            <input id="af-account-phone" type="text" class="py-2 px-3 pr-11 block w-full border-gray-200 shadow-sm -mt-px -ml-px first:rounded-t-lg last:rounded-b-lg sm:first:rounded-l-lg sm:mt-0 sm:first:ml-0 sm:first:rounded-tr-none sm:last:rounded-bl-none sm:last:rounded-r-lg text-sm relative focus:z-10 focus:border-blue-500 focus:ring-blue-500 dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400" placeholder="+x(xxx)xxx-xx-xx">
+            <Input v-model="formData.phone" minlength="10" size="md" type="tel" placeholder="+x (xxx) xxx-xxxx" />
           </div>
         </div>
       </div>
       <!-- End Grid -->
 
       <div class="mt-5 flex justify-end gap-x-2">
-        <button type="button" class="py-2 px-3 inline-flex justify-center items-center gap-2 rounded-md border font-medium bg-white text-gray-700 shadow-sm align-middle hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-white focus:ring-blue-600 transition-all text-sm dark:bg-slate-900 dark:hover:bg-slate-800 dark:border-gray-700 dark:text-gray-400 dark:hover:text-white dark:focus:ring-offset-gray-800">
-          Cancel
-        </button>
-        <button type="button" class="py-2 px-3 inline-flex justify-center items-center gap-2 rounded-md border border-transparent font-semibold bg-blue-500 text-white hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all text-sm dark:focus:ring-offset-gray-800">
-          Save changes
-        </button>
+        <Button :is-loading="isProcessing" size="md" type="submit">Save Changes</Button>
       </div>
-    </form>
+
+
+    </Form>
   </div>
 </template>
 <script setup lang="ts">
+import {onMounted, ref, Ref} from "vue";
+import {EditableUserInterface} from "@/models/user";
+import {useAuthStore} from "@/stores/auth";
+import Input from "@/components/form/Input.vue";
+import Form from "@/components/form/Form.vue";
+import Button from "@/components/form/Button.vue";
+import {recaptchaRequest} from "@/utilities/request";
+import DropDown from "@/components/DropDown.vue";
+import {HSSelect} from "preline";
+import Options from "@/components/form/Options.vue";
+import {OptionItem} from "@/models/optionItem";
+
 defineProps<{
   title: string,
   description: string
-}>()
+}>();
+
+const store = useAuthStore();
+const isProcessing: Ref<boolean> = ref(false);
+const formElement: Ref<HTMLFormElement|null> = ref(null);
+// @ts-ignore
+const formData: Ref<EditableUserInterface> = ref({
+  current_password: null,
+  new_password: null,
+  confirm_email: null,
+  ...store.user
+});
+
+function save(): void {
+  // isProcessing.value = true;
+  /*recaptchaRequest({ uri: '', data: formData }).then(() => {
+
+  })*/
+}
 </script>
 <style scoped>
 

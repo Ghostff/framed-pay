@@ -1,5 +1,5 @@
 <template>
-  <div class="hs-dropdown relative inline-flex">
+  <div ref="dropdownElement" class="hs-dropdown relative inline-flex">
     <slot
       :id="id"
       name="toggle"
@@ -8,6 +8,7 @@
         is="transparent"
         v-if="!toggleLabel"
         :id="id"
+        class="hs-dropdown-toggle"
         :size="size || 'md'"
       >
         <font-awesome-icon icon="ellipsis" />
@@ -16,6 +17,7 @@
         is="transparent"
         v-else
         :id="id"
+        class="hs-dropdown-toggle"
         :size="size || 'md'"
       >
         {{ toggleLabel }}
@@ -24,7 +26,7 @@
     </slot>
 
     <div
-      class="hs-dropdown-menu transition-[opacity,margin] duration hs-dropdown-open:opacity-100 opacity-0 hidden min-w-[15rem] bg-white shadow-md rounded-lg p-2 mt-2 divide-y divide-gray-200 dark:bg-gray-800 dark:border dark:border-gray-700 dark:divide-gray-700"
+      class="hs-dropdown-menu z-[1] transition-[opacity,margin] duration hs-dropdown-open:opacity-100 opacity-0 hidden min-w-[15rem] bg-white shadow-md rounded-lg p-2 mt-2 divide-y divide-gray-200 dark:bg-gray-800 dark:border dark:border-gray-700 dark:divide-gray-700"
       :aria-labelledby="id"
     >
       <slot name="header" />
@@ -68,29 +70,44 @@
   </div>
 </template>
 <script setup lang="ts">
-import { ref, type Ref, useSlots } from 'vue'
+import {onMounted, ref, type Ref, useSlots} from 'vue'
 import { MenuItem } from '@/models/menuItem'
 import Button from '@/components/form/Button.vue'
 import { v4 as uuid } from 'uuid'
+import {HSDropdown} from "preline";
 
 const props = defineProps<{
-  options: Array<MenuItem>
+  options: Array<MenuItem|unknown>
   toggleLabel?: string
   size?: string
 }>()
 
-const id: string = 'dropdown-' + uuid()
-const slots = useSlots()
-const namedMenus: Ref = ref<Array<MenuItem>>([])
-const unnamedMenus: Ref = ref<Array<MenuItem>>([])
-props.options.forEach((option) => {
-  if (option.isParent) {
+const id: string = 'dropdown-' + uuid();
+const slots = useSlots();
+const namedMenus: Ref = ref<Array<MenuItem>>([]);
+const unnamedMenus: Ref = ref<Array<MenuItem>>([]);
+const dropdownElement: Ref = ref<HTMLElement>();
+
+props.options.forEach((option: unknown|MenuItem) => {
+  if (typeof option !== 'object') {
+    option = new MenuItem(option as string, option)
+  }
+
+  if ((option as MenuItem).isParent) {
     namedMenus.value.push(option)
   } else {
     unnamedMenus.value.push(option)
   }
 })
-namedMenus.value.push(MenuItem.group('', unnamedMenus.value))
+namedMenus.value.push(MenuItem.group('', unnamedMenus.value));
+
+onMounted(() => {
+  if (window.$hsDropdownCollection === undefined) {
+    return;
+  }
+
+  const dropdown: HSDropdown = new HSDropdown(dropdownElement.value);
+})
 </script>
 <style scoped>
 .border-t-0 {

@@ -55,7 +55,7 @@
                           maxlength="255"
                       />
                         <Button
-                            :loading="isProcessing"
+                            :is-loading="isProcessing"
                             :disabled="formData.password.length === 0 || formData.repeat_password.length === 0"
                             type="submit"
                         >Change Password</Button>
