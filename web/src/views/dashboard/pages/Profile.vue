@@ -15,11 +15,12 @@
               <button
                   type="button"
                   class="hs-tab-active:bg-white hs-tab-active:shadow-md hs-tab-active:hover:border-transparent text-left hover:bg-gray-200 p-4 md:p-5 rounded-xl dark:hs-tab-active:bg-slate-900 dark:hover:bg-gray-700"
-                  :class="{'active': i === 0}"
+                  :class="{'active': i === activeTab}"
                   :id="`tabs-with-card-item-${i}`"
                   :data-hs-tab="`#${tab.id}`"
                   :aria-controls="tab.id"
                   role="tab"
+                  @click="activeTab = i"
               >
                 <span class="flex">
                   <font-awesome-icon
@@ -47,7 +48,7 @@
                   :key="tab.title"
                   :id="tab.id"
                   role="tabpanel"
-                  :class="{'hidden': i !== 0 }"
+                  :class="{'hidden': i !== activeTab }"
                   :aria-labelledby="`tabs-with-card-item-${i}`"
               >
                 <component :is="tab.component" :title="tab.title" :description="tab.desc" />
@@ -75,9 +76,11 @@ import TabPayment from "@/views/dashboard/components/ProfileTabs/Payment.vue";
 import TabUser from "@/views/dashboard/components/ProfileTabs/User.vue";
 import TabVendor from "@/views/dashboard/components/ProfileTabs/DeveloperTools.vue";
 import Button from "@/components/form/Button.vue";
+import {ref, Ref} from "vue";
 
 interface Tab {title: string; desc: string; icon: string; id: string; component: object}
 
+const activeTab: Ref<number> = ref(0);
 const tabs: Tab[] = [
     createTab('Account', 'address-card', TabUser, 'some random description'),
     createTab('Payment', 'credit-card', TabPayment, 'some random description'),

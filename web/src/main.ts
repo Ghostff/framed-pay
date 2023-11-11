@@ -5,7 +5,7 @@ import axios from 'axios';
 import { library } from '@fortawesome/fontawesome-svg-core';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import icons from '@/fonts';
-import('preline');
+// import('preline');
 
 
 import 'cooltipz-css' // custom tooltip

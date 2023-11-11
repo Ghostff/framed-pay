@@ -85,6 +85,7 @@ function setErrors(error: Error): void {
 
 function toggleErrors(errors?: stringKey<string[]>, name?: string): void {
   const className = errors ? `[data-ref="${name}"] .error-var` : '.error-var';
+  console.log(className, element, element.value.querySelectorAll(className))
   element.value.querySelectorAll(className).forEach((el: HTMLElement) => {
     if (errors) {
       el.classList.remove('hidden');

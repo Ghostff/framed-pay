@@ -15,4 +15,5 @@ export interface UserInterface extends stringKey<number | string | null> {
 export interface EditableUserInterface extends UserInterface {
   current_password: string|null;
   new_password: string|null;
+  country_code: string|null;
 }

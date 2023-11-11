@@ -21,8 +21,6 @@
             <Input v-model="name" placeholder="City" size="md" />
             <Input v-model="name" placeholder="State" size="md" maxlength="2" minlength="2" />
           </div>
-
-          <Options @on:select="selected" v-model="option" size="md" :options="countryOptions" />
         </div>
       </div>
       <!-- End Section -->
@@ -58,9 +56,6 @@
 <script setup lang="ts">
 import Input from "@/components/form/Input.vue";
 import {ref} from "vue";
-import Options from "@/components/form/Options.vue";
-import countries from "@/models/countries.js";
-import {MapItem} from "@/models/mapItem";
 
 defineProps<{
   title: string,
@@ -68,13 +63,7 @@ defineProps<{
 }>();
 
 const name = ref();
-const option = ref();
 
-const countryOptions: MapItem<string>[] = Object.entries(countries).map(([key, value]) => new MapItem(key, value))
-
-function selected() {
-  console.log(arguments)
-}
 </script>
 <style scoped>
 
