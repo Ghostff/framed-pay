@@ -67,6 +67,13 @@ impl<'a> JsonResponse<'a> {
         return Self::new().status(StatusCode::UNAUTHORIZED).error(message);
     }
 
+    pub fn bad_request(name: &str, message: &str) -> HttpResponse  {
+        return Self::new()
+            .status(StatusCode::BAD_REQUEST)
+            .payload_key("errors")
+            .build(json!({name: vec![message]}));
+    }
+
     pub fn success() -> HttpResponse {
         return Self::new().message_key("message").ok("Success")
     }

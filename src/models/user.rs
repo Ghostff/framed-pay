@@ -28,8 +28,30 @@ pub struct RegisterUserSchema {
     #[validate(length(min = 4, max = 250, message = "Email must be between 4 to 250"))]
     #[validate(email(code = "code_str", message = "Invalid email address"))]
     pub email: String,
-    #[validate(length(min = 6, message = "Password must be greater than 8 characters"))]
+    #[validate(length(min = 6, message = "Password must be greater than 6 characters"))]
     pub password: String,
+    // bot variables
+    pub confirm_email: String,
+    pub recaptcha_token: String,
+}
+
+#[derive(Debug, Deserialize, Validate)]
+pub struct UpdateUserSchema {
+    #[validate(length(min = 1, max = 100, message = "First name must be between 1 to 100"))]
+    pub first_name: String,
+    #[validate(length(min = 1, max = 100, message = "Last name must be between 1 to 100"))]
+    pub last_name: String,
+    #[validate(length(min = 4, max = 250, message = "Email must be between 4 to 250"))]
+    #[validate(email(code = "code_str", message = "Invalid email address"))]
+    pub email: String,
+    #[validate(length(min = 6, message = "Current password must be greater than 6 characters"))]
+    pub current_password: Option<String>,
+    #[validate(length(min = 6, message = "New password must be greater than 6 characters"))]
+    pub new_password: Option<String>,
+    #[validate(length(min = 10, max = 20, message = "Phone must be between 10 and 20 characters"))]
+    pub phone: Option<String>,
+    #[validate(length(min = 2, max = 2, message = "Invalid country code"))]
+    pub country_code: Option<String>,
     // bot variables
     pub confirm_email: String,
     pub recaptcha_token: String,

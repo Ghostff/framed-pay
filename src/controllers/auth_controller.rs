@@ -3,23 +3,11 @@ use actix_web::{
 };
 use actix_web::web::Data;
 use actix_web_validator::Json;
-use argon2::{Argon2, password_hash::{PasswordHash, PasswordVerifier}};
 use chrono::{ Utc, Duration };
 use jsonwebtoken::{encode, EncodingKey, Header};
 use sqlx::{PgPool};
 
-use crate::{
-    models::jwt::TokenClaims,
-    services::json_response::JsonResponse,
-    models::user::{LoginUserSchema, RegisterUserSchema, User},
-    repositories as repo,
-    services::email::Email,
-    services::cookie::{AccessTokenCookie, Cookie},
-    services::job_service::Job,
-    services,
-    utilities,
-    check_bot
-};
+use crate::{models::jwt::TokenClaims, services::json_response::JsonResponse, models::user::{LoginUserSchema, RegisterUserSchema, User}, repositories as repo, services::email::Email, services::cookie::{AccessTokenCookie, Cookie}, services::job_service::Job, services, utilities, check_bot, check_duplicate_email};
 use crate::config::{ENV};
 use crate::errors::DatabaseError;
 use crate::models::user::{PasswordChangeSchema, ResetUserPasswordSchema, VerifyPasswordResetTokenSchema};
@@ -27,7 +15,8 @@ use crate::models::user::{PasswordChangeSchema, ResetUserPasswordSchema, VerifyP
 pub async fn register(body: Json<RegisterUserSchema>, conn: Data<PgPool>) -> impl Responder {
     check_bot!(&body.confirm_email, &body.recaptcha_token);
     let email = body.email.to_lowercase();
-    let conflict_msg = "A user with email already exist in our system";
+    let conflict_msg = "Email already exist in our system";
+
     let exist = match repo::user_repository::email_exist(&conn, &email).await {
         Err(e) => return JsonResponse::fetal(e),
         Ok(r) => r,
@@ -37,7 +26,7 @@ pub async fn register(body: Json<RegisterUserSchema>, conn: Data<PgPool>) -> imp
         return JsonResponse::new().status(SC::CONFLICT).error(&conflict_msg);
     }
 
-    let password = utilities::str::hash(&body.password);
+    let password = utilities::crypto::hash_password(&body.password);
     let user = match repo::user_repository::create(
         &conn,
         &body.first_name,
@@ -69,9 +58,8 @@ pub async fn login(body: Json<LoginUserSchema>, conn: Data<PgPool>) -> impl Resp
         Ok(u) => u,
     };
 
-    let parsed_hash = PasswordHash::new(&user.password).unwrap();
-    if !Argon2::default().verify_password(body.password.as_bytes(), &parsed_hash).is_ok() {
-        return JsonResponse::new().status(SC::UNAUTHORIZED).error("Invalid email or password");
+    if !utilities::crypto::verify_password(&user.password, &body.password) {
+        return JsonResponse::unauthorized("Invalid email or password");
     }
 
     user.last_logged_in_at = Some(Utc::now());
@@ -136,7 +124,7 @@ pub async fn change_password(body: Json<PasswordChangeSchema>, conn: Data<PgPool
     };
 
     user.password_reset_token = None;
-    user.password = utilities::str::hash(&body.password);
+    user.password = utilities::crypto::hash_password(&body.password);
 
     if let Err(e) = repo::user_repository::update(&conn, &user).await {
         return JsonResponse::fetal(e)

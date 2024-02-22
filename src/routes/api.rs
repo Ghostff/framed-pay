@@ -16,6 +16,7 @@ pub fn init(cfg: &mut web::ServiceConfig) {
         .service(
             web::scope("")
                 .route("user", web::get().to(controllers::user_controller::me))
+                .route("user", web::put().to(controllers::user_controller::update))
                 .route("dev-tools", web::get().to(controllers::user_controller::get_dev_tools))
                 .route("user/api-key", web::post().to(controllers::api_key_controller::create))
                 .route("user/api-key/{id}", web::delete().to(controllers::api_key_controller::delete))

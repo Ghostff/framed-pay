@@ -55,3 +55,19 @@ pub async fn attach_api_key(conn: &Data<PgPool>, user: &User, name: &str) -> Res
         Err(e) => Err(e)
     }
 }
+
+#[macro_export]
+macro_rules! check_duplicate_email {
+    ($conn:expr, $email:expr, $conflict_msg:expr) => {
+        {
+            let exist = match crate::repositories::user_repository::email_exist(&$conn, &$email).await {
+                Err(e) => return crate::services::json_response::JsonResponse::fetal(e),
+                Ok(r) => r,
+            };
+
+            if exist {
+                return crate::services::json_response::JsonResponse::new().status(actix_web::http::StatusCode::CONFLICT).error(&$conflict_msg);
+            }
+        }
+    };
+}

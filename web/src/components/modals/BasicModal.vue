@@ -7,11 +7,15 @@
     <div
         class="hs-overlay-open:mt-7 hs-overlay-open:opacity-100 hs-overlay-open:duration-500 mt-0 opacity-0 ease-out transition-all"
         :class="{
-                'sm:max-w-xs sm:w-full m-3 sm:mx-auto': size === 'xs',
-                'sm:max-w-sm sm:w-full m-3 sm:mx-auto': size === 'sm',
-                'md:max-w-2xl md:w-full m-3 md:mx-auto': size === 'md',
-                'lg:max-w-4xl lg:w-full m-3 lg:mx-auto': size === 'lg',
-                'min-h-[calc(100%-3.5rem)] flex items-center': position === 'center',
+            'sm:max-w-xs sm:w-full m-3 sm:mx-auto mt-0': size === 'xs',
+            'sm:max-w-sm sm:w-full m-3 sm:mx-auto mt-0': size === 'sm',
+            'md:max-w-md md:w-full m-3 md:mx-auto mt-0': size === 'md',
+            'md:max-w-lg md:w-full m-3 md:mx-auto mt-0': size === 'lg',
+            'md:max-w-xl md:w-full m-3 md:mx-auto mt-0': size === 'xl',
+            'md:max-w-2xl md:w-full m-3 md:mx-auto mt-0': size === '2xl',
+            'lg:max-w-4xl lg:w-full m-3 lg:mx-auto mt-0': size === 'lg',
+            'hs-overlay-open:mt-0 mt-10 max-w-full w-full': size === 'full',
+            'min-h-[calc(100%-3.5rem)] flex items-center': position === 'center'
             }"
     >
       <div class="relative flex flex-col bg-white shadow-sm rounded-xl dark:bg-gray-800 dark:border-gray-700">

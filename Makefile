@@ -1,3 +1,6 @@
+start-server: dev
+	cargo watch -q -c -w src/ -x run
+
 dev:
 	docker-compose up -d
 
@@ -9,10 +12,6 @@ watch:
 	ncu --upgrade && \
 	npm i && \
 	npm run dev
-
-
-start-server: dev
-	cargo watch -q -c -w src/ -x run
 
 migrate@create:
 	sqlx migrate add --source ./src/migrations -r $(name)
@@ -31,6 +30,7 @@ install:
 	cargo add chrono --features serde
 	cargo add env_logger
 	cargo add dotenv
+	cargo install cargo-update
 	cargo add uuid --features "serde v4"
 	cargo add sqlx --features "runtime-async-std-native-tls postgres chrono uuid"
 	# HotReload

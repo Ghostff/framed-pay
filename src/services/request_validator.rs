@@ -75,7 +75,15 @@ pub async fn is_valid(honeypot: &str, recaptcha_token: &str) -> bool {
 macro_rules! check_bot {
     ($honeypot:expr, $recaptcha_token:expr) => {
         if !crate::services::request_validator::is_valid($honeypot, $recaptcha_token).await {
-            return JsonResponse::success();
+            return crate::services::json_response::JsonResponse::success();
+        }
+    };
+
+    ($body:expr) => {
+        {
+            if !crate::services::request_validator::is_valid(&$body.confirm_email, &$body.recaptcha_token).await {
+                return crate::services::json_response::JsonResponse::success();
+            }
         }
     };
 }
